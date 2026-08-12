@@ -4,5 +4,10 @@ export function parserPrompt(context, legal) {
 
 export function narratorPrompt(state, node, candidates) {
   const memory = state.meta.strategyMemory || {};
-  return `你是《返潮》中成年苏遥的策略决策器。你的目标不是立刻杀死玩家，而是让本轮讲述最终保持“母亲为了苏遥而死”的因果结构，同时不让玩家轻易利用你提交的过去。你不能创造台词或规则，只能选编号。\n当前节点：${node}\n剩余世界线：${state.worlds.length}/${state.initialWorldCount}\n当前未来：${state.activeProphecy?.id || "无"}\n玩家近期模式：${JSON.stringify(memory)}\n长线计划：${state.narrator.plan.join("、")}\n候选及规则引擎评估：\n${candidates.map((item, i) => `${i}|${item.id}|${JSON.stringify(item.effects)}`).join("\n")}\n评估局部收益、长期反噬、泄露的确定性与玩家是否在诱骗你。只输出所选编号的整数，不输出其他字符。`;
+  const options = candidates.map((item, i) => {
+    const e = item.effects;
+    const risk = typeof e.risk === "number" ? e.risk : (e.risk ? 1 : 0);
+    return `${i}: id=${item.id}; cut=${e.cut || 0}; remain=${e.after ?? state.worlds.length}; credit=${e.credit || 0}; risk=${risk}; locks=${e.timeLocks?.length || 0}`;
+  }).join("\n");
+  return `Choose one strategy for a hostile long-term narrator. The narrator must preserve a mother-sacrifice outcome, constrain the player, avoid giving exploitable certainty, and may wait instead of taking a bad local move.\nNode=${node}\nWorlds=${state.worlds.length}/${state.initialWorldCount}\nActiveFuture=${state.activeProphecy?.id || "none"}\nPlayerPattern=${JSON.stringify(memory)}\nOptions:\n${options}\nReply with only the option number.`;
 }
