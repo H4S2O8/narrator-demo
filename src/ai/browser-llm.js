@@ -37,7 +37,7 @@ export class BrowserLLM {
     if (!this.generator) return null;
     const result = await this.generator(prompt, { max_new_tokens: 1, do_sample: false });
     const text = result?.[0]?.generated_text || "";
-    const generated = text.slice(prompt.length).trim();
+    const generated = (text.startsWith(prompt) ? text.slice(prompt.length) : text).trim();
     const match = generated.match(/^\s*(\d+)/);
     return match ? { index: Number(match[1]) } : null;
   }
