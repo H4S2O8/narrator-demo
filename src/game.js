@@ -177,7 +177,7 @@ async function maybeNarrator(node) {
     else if (wasPaused) setPaused(true, priorReason || "manual");
     else setPaused(false, "reasoning");
   }
-  state.narrator.decisions.push({ at: state.time, node, choice });
+  state.narrator.decisions.push({ at: state.time, node, choice, source: llm.lastNarratorSource });
   if (choice === "SILENCE") { state.narrator.patience = Math.min(1, state.narrator.patience + .08); return; }
   if (PAST[choice]) {
     const result = commitPast(state, choice);

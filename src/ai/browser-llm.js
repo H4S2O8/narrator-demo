@@ -11,6 +11,7 @@ export class BrowserLLM {
     this.generator = null;
     this.loading = false;
     this.mode = "rules";
+    this.lastNarratorSource = "rules";
   }
 
   async load() {
@@ -34,7 +35,7 @@ export class BrowserLLM {
 
   async complete(prompt) {
     if (!this.generator) return null;
-    const result = await this.generator(prompt, { max_new_tokens: 3, do_sample: false });
+    const result = await this.generator(prompt, { max_new_tokens: 1, do_sample: false });
     const text = result?.[0]?.generated_text || "";
     const generated = text.slice(prompt.length).trim();
     const match = generated.match(/^\s*(\d+)/);
@@ -44,6 +45,8 @@ export class BrowserLLM {
   async parseAction(context) {
     const legal = legalActions(context);
     if (!legal.length) return null;
+    const exact = legal.filter(action => action.phrases.some(phrase => context.text === phrase || context.text.includes(phrase)));
+    if (exact.length === 1) return { action: exact[0], confidence: 1, source: "authored_phrase" };
     if (this.generator) {
       const choice = await this.complete(parserPrompt(context, legal));
       if (Number.isInteger(choice?.index) && legal[choice.index]) return { action: legal[choice.index], confidence: choice.confidence || 0.5, source: "llm" };
@@ -62,8 +65,12 @@ export class BrowserLLM {
     const evaluated = legal.map(id => ({ id, effects: this.evaluateNarratorOperation(state, id) }));
     if (this.generator) {
       const choice = await this.complete(narratorPrompt(state, node, evaluated));
-      if (Number.isInteger(choice?.index) && legal[choice.index]) return legal[choice.index];
+      if (Number.isInteger(choice?.index) && legal[choice.index]) {
+        this.lastNarratorSource = "llm";
+        return legal[choice.index];
+      }
     }
+    this.lastNarratorSource = "rules";
     return this.ruleNarrator(state, node, legal);
   }
 
