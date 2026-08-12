@@ -34,11 +34,11 @@ export class BrowserLLM {
 
   async complete(prompt) {
     if (!this.generator) return null;
-    const result = await this.generator(prompt, { max_new_tokens: 12, do_sample: false, repetition_penalty: 1.02 });
+    const result = await this.generator(prompt, { max_new_tokens: 3, do_sample: false });
     const text = result?.[0]?.generated_text || "";
-    const json = text.slice(prompt.length).match(/\{[^}]+\}/)?.[0] || text.match(/\{[^}]+\}/)?.[0];
-    if (!json) return null;
-    try { return JSON.parse(json); } catch { return null; }
+    const generated = text.slice(prompt.length).trim();
+    const match = generated.match(/^\s*(\d+)/);
+    return match ? { index: Number(match[1]) } : null;
   }
 
   async parseAction(context) {
