@@ -34,20 +34,25 @@ export class BrowserLLM {
     }
   }
 
-  async complete(prompt) {
+  async chooseIndex(prompt, optionCount) {
     if (!this.generator) return null;
-    const messages = [
-      { role: "system", content: "Choose exactly one numbered option. Reply with only that integer." },
-      { role: "user", content: prompt },
-      { role: "assistant", content: "The selected option is " }
-    ];
-    const result = await this.generator(messages, { max_new_tokens: 4, do_sample: false, continue_final_message: true });
-    const output = result?.[0]?.generated_text;
-    const text = Array.isArray(output) ? (output.at(-1)?.content || "") : (output || "");
-    const generated = (text.startsWith(prompt) ? text.slice(prompt.length) : text).trim();
-    this.lastCompletion = generated;
-    const match = generated.match(/\b(\d+)\b/);
-    return match ? { index: Number(match[1]) } : null;
+    const tokenizer = this.generator.tokenizer;
+    const model = this.generator.model;
+    const inputs = tokenizer(`${prompt}\nAnswer:`);
+    const output = await model(inputs);
+    const logits = output.logits;
+    const vocab = logits.dims.at(-1);
+    const sequence = logits.dims.at(-2);
+    const offset = (sequence - 1) * vocab;
+    const scores = [];
+    for (let index = 0; index < optionCount; index += 1) {
+      const tokenized = tokenizer(String(index), { add_special_tokens: false });
+      const tokenId = Number(tokenized.input_ids.data.at(-1));
+      scores.push(Number(logits.data[offset + tokenId]));
+    }
+    const index = scores.indexOf(Math.max(...scores));
+    this.lastCompletion = `scores:${scores.map(score => score.toFixed(2)).join(",")}`;
+    return Number.isInteger(index) && index >= 0 ? { index } : null;
   }
 
   async parseAction(context) {
@@ -56,7 +61,7 @@ export class BrowserLLM {
     const exact = legal.filter(action => context.text === action.label || context.text.includes(action.label) || action.phrases.some(phrase => context.text === phrase || context.text.includes(phrase)));
     if (exact.length === 1) return { action: exact[0], confidence: 1, source: "authored_phrase" };
     if (this.generator) {
-      const choice = await this.complete(parserPrompt(context, legal));
+      const choice = await this.chooseIndex(parserPrompt(context, legal), legal.length);
       if (Number.isInteger(choice?.index) && legal[choice.index]) return { action: legal[choice.index], confidence: choice.confidence || 0.5, source: "llm" };
     }
     return fallbackParse(context);
@@ -72,7 +77,7 @@ export class BrowserLLM {
     if (!legal.length) return "SILENCE";
     const evaluated = legal.map(id => ({ id, effects: this.evaluateNarratorOperation(state, id) }));
     if (this.generator) {
-      const choice = await this.complete(narratorPrompt(state, node, evaluated));
+      const choice = await this.chooseIndex(narratorPrompt(state, node, evaluated), legal.length);
       if (Number.isInteger(choice?.index) && legal[choice.index]) {
         this.lastNarratorSource = "llm";
         return legal[choice.index];
