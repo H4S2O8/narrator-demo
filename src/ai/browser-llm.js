@@ -12,6 +12,7 @@ export class BrowserLLM {
     this.loading = false;
     this.mode = "rules";
     this.lastNarratorSource = "rules";
+    this.lastCompletion = "";
   }
 
   async load() {
@@ -38,6 +39,7 @@ export class BrowserLLM {
     const result = await this.generator(prompt, { max_new_tokens: 4, do_sample: false });
     const text = result?.[0]?.generated_text || "";
     const generated = (text.startsWith(prompt) ? text.slice(prompt.length) : text).trim();
+    this.lastCompletion = generated;
     const match = generated.match(/\b(\d+)\b/);
     return match ? { index: Number(match[1]) } : null;
   }
