@@ -45,7 +45,7 @@ export class BrowserLLM {
   async parseAction(context) {
     const legal = legalActions(context);
     if (!legal.length) return null;
-    const exact = legal.filter(action => action.phrases.some(phrase => context.text === phrase || context.text.includes(phrase)));
+    const exact = legal.filter(action => context.text === action.label || context.text.includes(action.label) || action.phrases.some(phrase => context.text === phrase || context.text.includes(phrase)));
     if (exact.length === 1) return { action: exact[0], confidence: 1, source: "authored_phrase" };
     if (this.generator) {
       const choice = await this.complete(parserPrompt(context, legal));
