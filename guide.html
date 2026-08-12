@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>《返潮》完整攻略与因果关系图</title>
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <nav><a href="index.html">返回游戏</a><a href="#tutorial">教程</a><a href="#routes">27条路径</a><a href="#operations">全部操作点</a><a href="#graph">关系图</a></nav>
+  <header>
+    <span>公开制作与攻略文档</span>
+    <h1>《返潮》完整攻略</h1>
+    <p>这不是唯一解清单。它列出全部可操作内容、成立条件、长期结果，以及过去裁剪与未来契约如何互相限制。</p>
+    <div id="metrics"></div>
+  </header>
+  <main>
+    <section id="tutorial"><h2>教程与核心规则</h2><div id="tutorial-list"></div></section>
+    <section id="routes"><h2>3×3×3 全路径</h2><p>第一幕由真实物理状态自然触发，第二幕由你实际维持的见证关系形成，第三幕由最终行动形成。不是三个选择菜单。</p><div id="route-grid"></div></section>
+    <section id="past"><h2>过去裁剪</h2><div class="table-wrap"><table><thead><tr><th>编号</th><th>旁白原句</th><th>保留历史</th><th>永久后果</th></tr></thead><tbody id="past-table"></tbody></table></div></section>
+    <section id="future"><h2>未来契约与实现链</h2><div id="prophecy-list"></div></section>
+    <section id="operations"><h2>全部可操作点</h2><p>每项至少具有不同前置条件或不同状态后果。无法诚实执行的输入不会被偷偷改成相近答案。</p><div class="table-wrap"><table><thead><tr><th>编号</th><th>操作</th><th>可用说法</th><th>结果类型</th><th>长期读取</th></tr></thead><tbody id="action-table"></tbody></table></div></section>
+    <section id="graph"><h2>带时间的有向因果图</h2><p>箭头表示裁剪、开启、关闭、占用或跨周目固化。图只显示策略骨架；上表给出全部细项。</p><div class="mermaid" id="mermaid-graph"></div></section>
+    <section id="loops"><h2>多周目真实差异</h2><div class="loop-grid"><article><b>第一遍：母亲的故事</b><p>苏遥掌握旁白操作。结尾保存具体过去、丢失物、人物存活和未支付代价。</p></article><article><b>第二遍：女儿的追问</b><p>具体认证成为硬锚；场景缺物、人物知识和旁白策略画像改变。</p></article><article><b>第三遍：讲述权分裂</b><p>柯宁追问词义，减少模糊操作；现实层的家庭选择也进入因果链，不只是旧场景换状态。</p></article></div></section>
+    <section id="final-hold"><h2>真实计时与暂停</h2><p>按 P 或空格可以随时暂停。按回车打开行动输入时，世界立即暂停；浏览器模型解析行动、旁白计算策略的全过程也不推进水位、NPC、预言或受力计时。关闭输入后恢复到打开前的运行或暂停状态。</p><p>“以身作界”不是一句结局选择。必须先用救援绳、背景架或电闸建立真实受力边界，再开始闭眼姿态并持续按住 H 6.5 秒。画面逐渐全黑；松开会恢复信息，也会让旁白重新获得介入窗口。主动暂停会诚实冻结这段时间。</p></section>
+  </main>
+  <script type="module" src="src/guide.js"></script>
+</body>
+</html>
