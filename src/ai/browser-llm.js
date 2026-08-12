@@ -38,9 +38,10 @@ export class BrowserLLM {
     if (!this.generator) return null;
     const messages = [
       { role: "system", content: "Choose exactly one numbered option. Reply with only that integer." },
-      { role: "user", content: prompt }
+      { role: "user", content: prompt },
+      { role: "assistant", content: "The selected option is " }
     ];
-    const result = await this.generator(messages, { max_new_tokens: 4, do_sample: false });
+    const result = await this.generator(messages, { max_new_tokens: 4, do_sample: false, continue_final_message: true });
     const output = result?.[0]?.generated_text;
     const text = Array.isArray(output) ? (output.at(-1)?.content || "") : (output || "");
     const generated = (text.startsWith(prompt) ? text.slice(prompt.length) : text).trim();
