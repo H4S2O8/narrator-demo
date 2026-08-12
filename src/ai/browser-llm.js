@@ -36,8 +36,13 @@ export class BrowserLLM {
 
   async complete(prompt) {
     if (!this.generator) return null;
-    const result = await this.generator(prompt, { max_new_tokens: 4, do_sample: false });
-    const text = result?.[0]?.generated_text || "";
+    const messages = [
+      { role: "system", content: "Choose exactly one numbered option. Reply with only that integer." },
+      { role: "user", content: prompt }
+    ];
+    const result = await this.generator(messages, { max_new_tokens: 4, do_sample: false });
+    const output = result?.[0]?.generated_text;
+    const text = Array.isArray(output) ? (output.at(-1)?.content || "") : (output || "");
     const generated = (text.startsWith(prompt) ? text.slice(prompt.length) : text).trim();
     this.lastCompletion = generated;
     const match = generated.match(/\b(\d+)\b/);
