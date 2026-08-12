@@ -1,0 +1,6 @@
+.test-chrome/
+artifacts-*.png
+route-*.png
+*.pid
+node_modules/
+.openai/.tmp/

@@ -1,0 +1,89 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: #080a0c;
+  color: #e7e4dc;
+  letter-spacing: 0;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #080a0c; }
+button, input { font: inherit; letter-spacing: 0; }
+button { cursor: pointer; }
+
+#game-shell {
+  width: min(1280px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: 52px auto minmax(164px, 24vh);
+  border-inline: 1px solid #252a2d;
+  background: #101316;
+}
+
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid #303537;
+  background: #15191b;
+}
+.identity, .clock-group { display: flex; align-items: center; gap: 12px; }
+.guide-link { color: #aeb8b3; font-size: 12px; text-decoration: none; border-bottom: 1px solid #59625f; }
+.guide-link:hover { color: #ead59e; border-color: #c4a35d; }
+.mark { padding: 4px 7px; border: 1px solid #c5a761; color: #dbc488; font-size: 11px; }
+#world-clock { font: 600 15px Consolas, monospace; color: #e9d8ad; min-width: 70px; }
+#pause-state { color: #7f918e; font-size: 12px; min-width: 42px; }
+
+#stage-wrap { position: relative; background: #050607; overflow: hidden; }
+#stage { display: block; width: 100%; height: auto; aspect-ratio: 5 / 3; image-rendering: pixelated; }
+.curtain { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(4, 6, 7, .86); }
+.curtain.hidden { display: none; }
+.title-block { width: min(560px, calc(100% - 40px)); border-left: 3px solid #c4a35d; padding: 18px 24px; }
+.title-block span { color: #9caaa6; font-size: 12px; text-transform: uppercase; }
+.title-block h1 { margin: 8px 0; font-size: clamp(32px, 7vw, 68px); font-weight: 550; }
+.title-block p { color: #aab2af; }
+.title-block button, #submit-command { border: 1px solid #c4a35d; background: #c4a35d; color: #111; padding: 9px 16px; }
+
+.prophecy { position: absolute; top: 18px; left: 50%; width: min(560px, calc(100% - 40px)); transform: translateX(-50%); border: 1px solid #b1a17c; background: rgba(14, 16, 16, .95); padding: 10px 14px; box-shadow: 0 12px 32px rgba(0,0,0,.4); }
+.prophecy.hidden { display: none; }
+.prophecy-kicker { color: #c6ab69; font-size: 10px; }
+.prophecy p { margin: 4px 0 8px; }
+.timer-track, #world-meter { height: 3px; background: #353a3a; overflow: hidden; }
+.timer-track i, #world-meter i { display: block; height: 100%; width: 100%; background: #c6ab69; transform-origin: left; }
+
+#lower-panel { display: grid; grid-template-columns: minmax(0, 1fr) 270px; border-top: 1px solid #303537; min-height: 0; }
+#transcript { padding: 12px 16px; overflow: auto; font-size: 13px; line-height: 1.55; }
+.line { display: grid; grid-template-columns: 72px 1fr; gap: 10px; padding: 3px 0; }
+.line .speaker { color: #788986; text-align: right; }
+.line.narrator .speaker, .line.narrator .text { color: #d9c58e; }
+.line.system .text { color: #82918d; }
+.line.action .text { color: #c4cbc7; }
+#status-panel { padding: 12px 14px; border-left: 1px solid #303537; background: #0d1012; }
+.status-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+#world-count { font: 600 20px Consolas, monospace; color: #dbc488; }
+#status-list { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 8px; font-size: 11px; }
+#status-list dt { color: #71817e; }
+#status-list dd { margin: 0; color: #c4cac7; text-align: right; overflow-wrap: anywhere; }
+#status-list { min-width: 0; }
+
+#command-bar { position: fixed; left: 50%; bottom: 24px; z-index: 20; transform: translateX(-50%); width: min(900px, calc(100% - 28px)); display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 8px; padding: 9px; background: #161a1c; border: 1px solid #b19a62; box-shadow: 0 16px 50px #000; }
+#command-bar.hidden { display: none; }
+.prompt { padding-left: 6px; color: #c4a35d; }
+#command-input { min-width: 0; border: 0; outline: 0; background: #0c0e10; color: #f2eee3; padding: 10px; }
+.icon-button { width: 38px; height: 38px; border: 1px solid #454b4c; background: transparent; color: #aeb5b2; font-size: 22px; }
+
+#tutorial-card { position: absolute; z-index: 10; right: 24px; top: 78px; width: min(310px, calc(100% - 48px)); border: 1px solid #55605e; background: rgba(16,19,20,.96); padding: 12px 14px; }
+#tutorial-card.hidden { display: none; }
+#tutorial-step { color: #bfa45f; font-size: 10px; }
+#tutorial-card p { margin: 5px 0; color: #d4d6d1; font-size: 13px; line-height: 1.5; }
+
+@media (max-width: 720px) {
+  #game-shell { grid-template-rows: 48px auto minmax(230px, 35vh); }
+  .identity .mark, #act-label { display: none; }
+  .guide-link { font-size: 11px; }
+  #lower-panel { grid-template-columns: 1fr; }
+  #status-panel { display: none; }
+  .line { grid-template-columns: 56px 1fr; }
+}

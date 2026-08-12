@@ -1,17 +1,67 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>未定义状态：最后十分钟</title>
-<style>
-:root{color-scheme:dark;--bg:#111318;--panel:#1b1f27;--line:#343b49;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#d7aa65;--danger:#d56c6c;--ok:#8ac7a0}
-*{box-sizing:border-box}body{margin:0;background:#111318;color:var(--ink);font:15px/1.55 system-ui,"Microsoft YaHei",sans-serif}main{max-width:1100px;margin:auto;padding:22px 16px 36px}.top{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px}.kicker{color:var(--accent);font-size:12px}.title{font-size:26px}.clock{color:var(--accent);font-size:26px;font-variant-numeric:tabular-nums}.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:14px}.scene{height:480px;position:relative;overflow:hidden;background:linear-gradient(155deg,#303b43,#15181d 70%)}.scene:after{content:"";position:absolute;z-index:5;inset:0;pointer-events:none;background:radial-gradient(circle at var(--px,28%) var(--py,70%),transparent 0 14%,rgba(8,10,14,.65) 17%,#080a0e 22%)}.room-label{position:absolute;z-index:4;top:14px;left:15px;color:var(--muted);font-size:12px}.player{position:absolute;z-index:8;width:16px;height:16px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(215,170,101,.2);transform:translate(-50%,-50%);pointer-events:none}.shooter{display:none;position:absolute;z-index:8;left:88%;top:42%;width:13px;height:13px;border-radius:50%;background:var(--danger);box-shadow:0 0 12px rgba(213,108,108,.8);transform:translate(-50%,-50%)}.shooter:after{content:"钟鸣";position:absolute;top:-22px;left:-10px;color:var(--danger);font-size:11px}.shooter.show{display:block}.shot-line{display:none;position:absolute;z-index:7;height:3px;background:var(--danger);transform-origin:left center;box-shadow:0 0 10px rgba(213,108,108,.9)}.shot-line.show{display:block;animation:shotPulse .7s ease-out}@keyframes shotPulse{0%{opacity:0;transform:scaleX(0)}45%{opacity:1}100%{opacity:.75;transform:scaleX(1)}}.object{position:absolute;z-index:4;border:1px solid rgba(231,233,238,.35);background:rgba(231,233,238,.1);color:var(--ink);padding:8px 10px;border-radius:5px;cursor:pointer;user-select:none}.object:hover,.object.selected{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px rgba(215,170,101,.28) inset}.desk{left:12%;bottom:22%;width:43%;height:16%}.door{right:8%;top:17%;width:13%;height:53%;writing-mode:vertical-rl;text-align:center}.kitchen{left:61%;bottom:18%;width:25%;height:19%}.mirror{right:29%;top:20%;width:13%;height:19%}.gun{left:34%;bottom:31%}.coffee{left:62%;bottom:30%}.flour{left:20%;bottom:43%}.tray{left:47%;bottom:43%}.test{left:80%;bottom:43%;font-size:12px}.status{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:8px}.log{height:235px;overflow:auto;background:#101217;border-radius:5px;padding:10px;font:13px/1.5 ui-monospace,Consolas,monospace}.line{margin:0 0 7px}.tag{color:var(--accent)}.narrator .tag{color:var(--danger)}.system .tag{color:var(--ok)}.controls{color:var(--muted);font-size:12px;margin:10px 0}.quick{display:flex;flex-wrap:wrap;gap:7px}.quick button{background:#252c36;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:8px 10px;cursor:pointer}.quick button:hover:not(:disabled){border-color:var(--accent)}.quick button:disabled{opacity:.3;cursor:not-allowed}.facts{margin:0;padding-left:18px;color:var(--muted)}.facts li{margin:5px 0}.hint{font-size:12px;color:var(--muted)}#posebar{display:none;margin-top:8px}.open{display:flex!important}.pose-title{color:var(--accent);font-size:12px;margin-right:6px;align-self:center}.dl{margin-top:14px}.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:10px}.dl-card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:12px 14px;text-decoration:none;color:var(--ink)}.dl-card:hover{border-color:var(--accent)}.dl-card .n{font-weight:600}.dl-card .s{display:block;color:var(--muted);font-size:12px;margin-top:3px}.dl-card.main{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;border-color:rgba(215,170,101,.55)}.dl-card.main .s{margin-top:0}.dl-btn{background:var(--accent);color:#14161a;border:0;border-radius:5px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;font-size:14px}.dl-note{color:var(--muted);font-size:12px;margin-top:10px}.dl-note a{color:var(--accent)}@media(max-width:760px){.layout{grid-template-columns:1fr}.scene{height:400px}.title{font-size:21px}.dl-card.main{flex-direction:column;gap:10px;align-items:flex-start}}
-</style></head>
-<body><main>
-<header class="top"><div><div class="kicker">文字原型 / 空间与状态测试</div><div class="title">未定义状态：最后十分钟</div></div><div class="clock" id="clock">10:00</div></header>
-<div class="layout"><section>
-<div class="panel scene" id="scene" tabindex="0"><div class="room-label" id="room">安全屋 · 书房侧</div><div class="player" id="player"></div><div class="shooter" id="shooter"></div><div class="shot-line" id="shot-line"></div><div class="object desk">桌子</div><div class="object door">门 / 走廊</div><div class="object kitchen">厨房台面</div><div class="object mirror" data-item="mirror">镜子</div><div class="object gun" data-item="gun">枪</div><div class="object coffee" data-item="coffee">咖啡</div><div class="object flour" data-item="flour">面粉</div><div class="object tray" data-item="tray">金属托盘</div><div class="object test" data-item="test">试纸</div><div id="fog"></div></div>
-<div class="panel" style="margin-top:12px"><div class="status"><span id="selection">先选择一个物品</span><span id="pose">姿势：站立</span><span id="phase">旁白：未介入</span></div><div class="log" id="log"></div><div class="controls">WASD 移动 · Enter 打开姿势动作 · 物品必须在附近且位于视线内</div><div class="quick"><button data-interaction="抓起">抓起</button><button data-interaction="放下">放下</button><button data-interaction="使用">使用</button><button data-interaction="戴上">戴上</button><button data-interaction="吃/喝">吃 / 喝</button><button data-interaction="专用检查">专用检查</button><button data-interaction="放置">放置</button><button data-interaction="推/拉">推 / 拉</button><button data-interaction="打开/关闭">打开 / 关闭</button><button data-interaction="扣动/触发">扣动 / 触发</button><button id="reset">重置</button></div><div id="posebar" class="quick"><span class="pose-title">姿势</span><button data-pose="站立">站立</button><button data-pose="蹲下">蹲下</button><button data-pose="趴下">趴下</button><button data-pose="闭眼">闭眼</button><button data-pose="贴墙">贴墙</button></div></div>
-</section><aside class="panel"><h3>已固定的事实</h3><ul class="facts" id="facts"></ul><h3 style="margin-top:18px">你注意到的东西</h3><ul class="facts" id="clues"></ul><p class="hint">没有任务列表，也没有正确答案。暗处的状态不会凭空变成已知事实。</p></aside></div>
-<section class="dl"><div class="panel" style="margin-top:0"><h3 style="margin:0 0 4px">桌面版 Demo（Windows）</h3><p class="hint" style="margin:0 0 10px">与网页版同源的单机桌面原型，直接运行，无需安装。</p><div class="dl-grid"><a class="dl-card main" href="https://github.com/H4S2O8/narrator-demo/releases/latest/download/UndefinedState-LastTenMinutes-Demo.exe"><span><span class="n">未定义状态：最后十分钟 · Demo.exe</span><span class="s">Windows x64 · 6.4 MB</span></span><span class="dl-btn">下载 Demo</span></a><a class="dl-card" href="https://github.com/H4S2O8/narrator-demo/releases/latest/download/guide-pictorial.docx"><span class="n">图文攻略</span><span class="s">.docx</span></a><a class="dl-card" href="https://github.com/H4S2O8/narrator-demo/releases/latest/download/guide-text.txt"><span class="n">文字攻略</span><span class="s">.txt</span></a><a class="dl-card" href="https://github.com/H4S2O8/narrator-demo/releases/latest/download/guide-narrator-strategy.md"><span class="n">策略旁白版</span><span class="s">.md</span></a></div><p class="dl-note">版本 desktop-v0.1.0 · <a href="https://github.com/H4S2O8/narrator-demo/releases">全部版本与更新</a></p></div></section>
-</main><script src="game.js"></script></body></html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>返潮</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="game-shell">
+    <header id="topbar">
+      <div class="identity">
+        <span class="mark">第 <i id="loop-mark">1</i> 遍</span>
+          <strong>返潮</strong>
+      </div>
+      <div class="clock-group">
+        <a class="guide-link" href="guide.html" target="_blank">攻略与关系图</a>
+        <span id="act-label">校准</span>
+        <time id="world-clock">00:00.0</time>
+        <span id="pause-state">运行中</span>
+      </div>
+    </header>
+
+    <section id="stage-wrap">
+      <canvas id="stage" width="960" height="576" aria-label="游戏场景"></canvas>
+      <div id="prophecy" class="prophecy hidden">
+        <span class="prophecy-kicker">已认证的未来</span>
+        <p id="prophecy-text"></p>
+        <div class="timer-track"><i id="prophecy-progress"></i></div>
+      </div>
+      <div id="curtain" class="curtain">
+        <div class="title-block">
+          <span>交互叙事原型</span>
+          <h1>返潮</h1>
+          <p>“再讲一遍。别替她省略。”</p>
+          <button id="start-button">开始讲述</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="lower-panel">
+      <div id="transcript" aria-live="polite"></div>
+      <aside id="status-panel">
+        <div class="status-head">
+          <strong>仍成立的事故史</strong>
+          <span id="world-count">648</span>
+        </div>
+        <div id="world-meter"><i></i></div>
+        <dl id="status-list"></dl>
+      </aside>
+    </section>
+
+    <section id="command-bar" class="hidden">
+      <span class="prompt">&gt;</span>
+      <input id="command-input" autocomplete="off" spellcheck="false" placeholder="描述你要做的事，例如：把盆放在漏水下面">
+      <button id="submit-command">执行</button>
+      <button id="cancel-command" class="icon-button" title="取消">×</button>
+    </section>
+
+    <div id="tutorial-card" class="hidden">
+      <span id="tutorial-step"></span>
+      <p id="tutorial-text"></p>
+    </div>
+  </main>
+  <script type="module" src="src/game.js"></script>
+</body>
+</html>
