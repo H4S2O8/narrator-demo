@@ -201,7 +201,7 @@ function updateUi() {
     <dt>水位</dt><dd>${Math.round(state.environment.water*100)}%</dd>
     <dt>供电 / 泵</dt><dd>${state.environment.power?"有":"无"} / ${state.environment.pump?"运行":"停止"}</dd>
     <dt>路线</dt><dd>${route}</dd>
-    <dt>模型</dt><dd>${state.narrator.modelMode === "ready" ? "浏览器LLM" : modelStatus}</dd>`;
+    <dt>模型</dt><dd>${state.narrator.modelMode === "ready" ? "浏览器轻量LLM" : modelStatus}</dd>`;
   updateProphecyUI(state, root);
 }
 

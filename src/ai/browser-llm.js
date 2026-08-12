@@ -3,7 +3,7 @@ import { NARRATOR_NODES, PAST, PROPHECIES } from "../data/content.js";
 import { fallbackParse } from "../engine/actions.js";
 import { narratorPrompt, parserPrompt } from "./prompts.js";
 
-const MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct";
+const MODEL_ID = "HuggingFaceTB/SmolLM2-135M-Instruct";
 
 export class BrowserLLM {
   constructor(onStatus = () => {}) {
@@ -34,7 +34,7 @@ export class BrowserLLM {
 
   async complete(prompt) {
     if (!this.generator) return null;
-    const result = await this.generator(prompt, { max_new_tokens: 28, do_sample: false, repetition_penalty: 1.05 });
+    const result = await this.generator(prompt, { max_new_tokens: 12, do_sample: false, repetition_penalty: 1.02 });
     const text = result?.[0]?.generated_text || "";
     const json = text.slice(prompt.length).match(/\{[^}]+\}/)?.[0] || text.match(/\{[^}]+\}/)?.[0];
     if (!json) return null;
