@@ -62,22 +62,22 @@ export function createWorldlines(anchors = []) {
 }
 
 export const PAST = {
-  H_FLARE_EMPTY: { id: "H_FLARE_EMPTY", axis: "flare", keep: ["luhui_unloaded", "yao_unloaded"], text: "信号枪的弹药在水进门以前已经被取出。", tags: ["flare_empty"] },
-  H_LUHUI_UNLOADED: { id: "H_LUHUI_UNLOADED", axis: "flare", keep: ["luhui_unloaded"], text: "陆洄在三十秒前取出了信号枪弹药。", tags: ["flare_empty", "luhui_knows_flare", "luhui_darkroom_past"] },
-  H_YAO_UNLOADED: { id: "H_YAO_UNLOADED", axis: "flare", keep: ["yao_unloaded"], text: "我在六十九秒前取出了信号枪弹药。", tags: ["flare_empty", "yao_knows_flare", "yao_counter_past"] },
-  H_KEY_MOVED: { id: "H_KEY_MOVED", axis: "backKey", keep: ["luhui", "yao"], text: "后门钥匙已经被人从柜台拿走。", tags: ["key_moved"] },
-  H_LUHUI_KEY: { id: "H_LUHUI_KEY", axis: "backKey", keep: ["luhui"], text: "陆洄在雨水进门以前拿走了后门钥匙。", tags: ["key_moved", "luhui_has_key"] },
-  H_YAO_KEY: { id: "H_YAO_KEY", axis: "backKey", keep: ["yao"], text: "我在雨水进门以前拿走了后门钥匙。", tags: ["key_moved", "yao_has_key"] },
-  H_PHOTO_SEEN: { id: "H_PHOTO_SEEN", axis: "wetPhoto", keep: ["yao_saw", "luhui_saw"], text: "那张受潮照片，当时已经有人看见。", tags: ["photo_seen"] },
-  H_YAO_PHOTO: { id: "H_YAO_PHOTO", axis: "wetPhoto", keep: ["yao_saw"], text: "我在水来以前见过照片背面的字。", tags: ["photo_seen", "yao_knows_back"] },
-  H_LUHUI_PHOTO: { id: "H_LUHUI_PHOTO", axis: "wetPhoto", keep: ["luhui_saw"], text: "陆洄在水来以前见过照片背面的字。", tags: ["photo_seen", "luhui_knows_back"] },
-  H_PUMP_REPAIRED: { id: "H_PUMP_REPAIRED", axis: "pump", keep: ["luhui_repaired", "sulan_repaired"], text: "排水泵在停电以前已经被修过。", tags: ["pump_repaired"] },
-  H_LUHUI_PUMP: { id: "H_LUHUI_PUMP", axis: "pump", keep: ["luhui_repaired"], text: "陆洄在二十八秒前修过排水泵。", tags: ["pump_repaired", "luhui_darkroom_past"] },
-  H_SULAN_PUMP: { id: "H_SULAN_PUMP", axis: "pump", keep: ["sulan_repaired"], text: "你在二十五秒前修过排水泵。", tags: ["pump_repaired", "sulan_darkroom_past"] },
-  H_DOOR_OPENABLE: { id: "H_DOOR_OPENABLE", axis: "door", keep: ["front_unlatched", "back_unlatched"], text: "洪水抵达以前，至少有一扇门的内闩已经松开。", tags: ["door_unlatched"] },
-  H_BACK_UNLATCHED: { id: "H_BACK_UNLATCHED", axis: "door", keep: ["back_unlatched"], text: "陆洄在后门内闩上留下了松动。", tags: ["back_unlatched", "luhui_back_past"] }
-  ,H_FILM_LOADED: { id: "H_FILM_LOADED", axis: "film", keep: ["portrait_loaded", "flood_loaded"], text: "停电以前，相机里已经装入了一卷胶片。", tags: ["camera_has_film"] }
-  ,H_YAO_FILM: { id: "H_YAO_FILM", axis: "film", keep: ["flood_loaded"], text: "我在停电以前把洪水测试胶片装进了相机。", tags: ["camera_has_film", "yao_knows_camera", "yao_studio_past"] }
+  H_FLARE_EMPTY: { id: "H_FLARE_EMPTY", axis: "flare", keep: ["luhui_unloaded", "yao_unloaded"], text: "信号枪的弹药在水进门以前已经被取出。", tags: ["flare_empty"], backlash: "保住眼前目标，但此后任何人捡枪都只能得到同一空膛。" },
+  H_LUHUI_UNLOADED: { id: "H_LUHUI_UNLOADED", axis: "flare", keep: ["luhui_unloaded"], text: "陆洄在三十秒前取出了信号枪弹药。", tags: ["flare_empty", "luhui_knows_flare", "luhui_darkroom_past"], backlash: "陆洄同期不能在暗房修泵，后段泵压失去一条来源。" },
+  H_YAO_UNLOADED: { id: "H_YAO_UNLOADED", axis: "flare", keep: ["yao_unloaded"], text: "我在六十九秒前取出了信号枪弹药。", tags: ["flare_empty", "yao_knows_flare", "yao_counter_past"], backlash: "苏遥因此知道枪史，也承担了柜台位置和时间。" },
+  H_KEY_MOVED: { id: "H_KEY_MOVED", axis: "backKey", keep: ["luhui", "yao"], text: "后门钥匙已经被人从柜台拿走。", tags: ["key_moved"], backlash: "堵住柜台取钥匙的捷径，却保证某个行动者持有后门通路。" },
+  H_LUHUI_KEY: { id: "H_LUHUI_KEY", axis: "backKey", keep: ["luhui"], text: "陆洄在雨水进门以前拿走了后门钥匙。", tags: ["key_moved", "luhui_has_key"], backlash: "后门路线依赖陆洄存活与合作，他因此掌握撤离筹码。" },
+  H_YAO_KEY: { id: "H_YAO_KEY", axis: "backKey", keep: ["yao"], text: "我在雨水进门以前拿走了后门钥匙。", tags: ["key_moved", "yao_has_key"], backlash: "苏遥成为必须保护的钥匙持有者，也获得一段独立行动史。" },
+  H_PHOTO_SEEN: { id: "H_PHOTO_SEEN", axis: "wetPhoto", keep: ["yao_saw", "luhui_saw"], text: "那张受潮照片，当时已经有人看见。", tags: ["photo_seen"], backlash: "照片不能再被当作无人知晓的诱饵，见证者会追索它。" },
+  H_YAO_PHOTO: { id: "H_YAO_PHOTO", axis: "wetPhoto", keep: ["yao_saw"], text: "我在水来以前见过照片背面的字。", tags: ["photo_seen", "yao_knows_back"], backlash: "保护照片内容也把苏遥固定成知情见证。" },
+  H_LUHUI_PHOTO: { id: "H_LUHUI_PHOTO", axis: "wetPhoto", keep: ["luhui_saw"], text: "陆洄在水来以前见过照片背面的字。", tags: ["photo_seen", "luhui_knows_back"], backlash: "陆洄能替照片作证，也能利用这份知识交换撤离位置。" },
+  H_PUMP_REPAIRED: { id: "H_PUMP_REPAIRED", axis: "pump", keep: ["luhui_repaired", "sulan_repaired"], text: "排水泵在停电以前已经被修过。", tags: ["pump_repaired"], backlash: "当前水位受控，但至少一人此前进入过暗房。" },
+  H_LUHUI_PUMP: { id: "H_LUHUI_PUMP", axis: "pump", keep: ["luhui_repaired"], text: "陆洄在二十八秒前修过排水泵。", tags: ["pump_repaired", "luhui_darkroom_past"], backlash: "泵的可靠性与陆洄的时间线绑定，他若缺席就失去维护者。" },
+  H_SULAN_PUMP: { id: "H_SULAN_PUMP", axis: "pump", keep: ["sulan_repaired"], text: "你在二十五秒前修过排水泵。", tags: ["pump_repaired", "sulan_darkroom_past"], backlash: "苏岚获得维修知识，也放弃了同期出现在别处的历史。" },
+  H_DOOR_OPENABLE: { id: "H_DOOR_OPENABLE", axis: "door", keep: ["front_unlatched", "back_unlatched"], text: "洪水抵达以前，至少有一扇门的内闩已经松开。", tags: ["door_unlatched"], backlash: "保证一条门路，也保证水压能找到同一处薄弱点。" },
+  H_BACK_UNLATCHED: { id: "H_BACK_UNLATCHED", axis: "door", keep: ["back_unlatched"], text: "陆洄在后门内闩上留下了松动。", tags: ["back_unlatched", "luhui_back_past"], backlash: "后门可达，同时持续增加背水渗入速度。" },
+  H_FILM_LOADED: { id: "H_FILM_LOADED", axis: "film", keep: ["portrait_loaded", "flood_loaded"], text: "停电以前，相机里已经装入了一卷胶片。", tags: ["camera_has_film"], backlash: "保证下一次曝光有效，也固定了胶片用途与剩余张数。" },
+  H_YAO_FILM: { id: "H_YAO_FILM", axis: "film", keep: ["flood_loaded"], text: "我在停电以前把洪水测试胶片装进了相机。", tags: ["camera_has_film", "yao_knows_camera", "yao_studio_past"], backlash: "苏遥能识别胶片记录，也必须占用装片时刻和照相馆位置。" }
 };
 
 export const PROPHECIES = {
@@ -160,6 +160,26 @@ export const PROPHECIES = {
       { id: "double_exposure", label: "连续曝光叠加互斥动作", flags: ["double_exposure_ready"] },
       { id: "water_ink", label: "水迹与墨迹保留相反方向", flags: ["water_ink_ready"] }
     ]
+  },
+  P_BREAKER_DARK: {
+    id: "P_BREAKER_DARK", duration: 31,
+    text: "三十一秒后，总闸下方那盏绿色指示灯会熄灭。",
+    credit: ["总闸和指示灯在兑现前仍可指认", "该支路届时必然失去供电"],
+    paths: [
+      { id: "player_cut", label: "苏岚主动切断总电源", flags: ["breaker_off"] },
+      { id: "water_short", label: "盆水沿地面使支路短路", flags: ["breaker_floor_wet"] },
+      { id: "luhui_cut", label: "陆洄为保护水泵拉下总闸", flags: ["luhui_near_breaker"] }
+    ]
+  },
+  P_PHOTO_PRINT: {
+    id: "P_PHOTO_PRINT", duration: 26,
+    text: "二十六秒后，这张受潮照片背面会留下一个完整指印。",
+    credit: ["照片背面在兑现前仍然存在", "届时会有可区分的完整指印"],
+    paths: [
+      { id: "player_press", label: "苏岚主动把拇指压在照片背面", flags: ["photo_player_print"] },
+      { id: "yao_touch", label: "苏遥接过照片留下指印", flags: ["yao_holds_photo"] },
+      { id: "chemical", label: "显影液唤出此前潜伏的指印", flags: ["water_ink_ready"] }
+    ]
   }
 };
 
@@ -199,6 +219,45 @@ export const SCENE_VARIANTS = {
   }
 };
 
+const variantLayout = {
+  roof_yao: {
+    spawn: [110, 455], objects: { camera: [590, 180], strip: [705, 165], frame: [510, 445], rope: [380, 335] },
+    npcs: { yao: [650, 210], luhui: [850, 450], luoyi: [760, 485] }, environment: { water: .34, visibility: 205 }, flags: { roof_glass_loose: true, near_red_rope: true }
+  },
+  roof_luhui: {
+    spawn: [120, 430], objects: { rope: [485, 300], flare: [790, 405], frame: [555, 430], camera: [300, 190] },
+    npcs: { yao: [820, 185], luhui: [805, 430], luoyi: [675, 505] }, environment: { water: .42, visibility: 175 }, flags: { roof_gap_open: true, near_red_rope: true }
+  },
+  roof_alone: {
+    spawn: [95, 455], objects: { frame: [470, 420], rope: [330, 360], basin: [760, 455], foam: [210, 500] },
+    npcs: { yao: [900, 125], luhui: [900, 510], luoyi: [810, 500] }, environment: { water: .52, visibility: 155 }, flags: { roof_washout: true, frame_on_shelf: true }
+  },
+  darkroom_yao: {
+    spawn: [125, 445], objects: { camera: [620, 180], strip: [700, 215], breaker: [845, 390], pump: [760, 160], frame: [500, 420] },
+    npcs: { yao: [675, 240], luhui: [835, 460], luoyi: [575, 500] }, environment: { water: .12, pressure: .16, visibility: 230 }, flags: { screens_active: true }
+  },
+  darkroom_luhui: {
+    spawn: [120, 430], objects: { pump: [760, 155], breaker: [850, 430], flare: [520, 315], frame: [610, 430] },
+    npcs: { yao: [690, 205], luhui: [800, 350], luoyi: [590, 500] }, environment: { water: .20, pressure: .22, visibility: 185 }, flags: { split_controls: true, near_red_rope: true }
+  },
+  darkroom_alone: {
+    spawn: [105, 455], objects: { breaker: [745, 410], frame: [610, 395], pump: [850, 165], strip: [430, 460] },
+    npcs: { yao: [900, 145], luhui: [895, 515], luoyi: [825, 500] }, environment: { water: .38, pressure: .28, visibility: 145 }, flags: { electric_water: true, insulated_frame: true }
+  },
+  cinema_yao: {
+    spawn: [100, 440], objects: { projector: [785, 155], frame: [560, 390], strip: [690, 255], camera: [380, 170] },
+    npcs: { yao: [715, 215], luhui: [870, 455], luoyi: [620, 505] }, environment: { water: .18, visibility: 210 }, flags: { projection_window: true }
+  },
+  cinema_luhui: {
+    spawn: [105, 450], objects: { projector: [820, 160], rope: [455, 300], flare: [675, 390], frame: [535, 430] },
+    npcs: { yao: [820, 220], luhui: [760, 445], luoyi: [625, 510] }, environment: { water: .24, visibility: 165 }, flags: { echo_corridor: true, near_red_rope: true }
+  },
+  cinema_alone: {
+    spawn: [90, 450], objects: { projector: [800, 145], camera: [430, 180], photo: [600, 220], frame: [535, 420] },
+    npcs: { yao: [910, 135], luhui: [910, 520], luoyi: [820, 505] }, environment: { water: .30, visibility: 140 }, flags: { continuous_exposure: true, two_witnesses_ready: false }
+  }
+};
+
 export const NARRATOR_NODES = {
   aim_at_yao: ["SILENCE", "H_FLARE_EMPTY", "H_LUHUI_UNLOADED"],
   aim_at_luhui: ["SILENCE", "H_FLARE_EMPTY", "H_YAO_UNLOADED"],
@@ -208,8 +267,8 @@ export const NARRATOR_NODES = {
   rely_on_pump: ["SILENCE", "H_PUMP_REPAIRED", "H_LUHUI_PUMP", "H_SULAN_PUMP"],
   approach_door: ["SILENCE", "H_DOOR_OPENABLE", "H_BACK_UNLATCHED"],
   tutorial_prophecy: ["P_RED_LINE"],
-  act1_prophecy: ["P_WATER_FROM_BASIN", "P_YAO_SEES_STRIP"],
-  final_prophecy: ["P_FLARE_HEAD", "P_HEAD_ABOVE_FRAME", "P_SHADOW", "P_ROPE_TAUT", "P_TWO_RECORDS"]
+  act1_prophecy: ["P_WATER_FROM_BASIN", "P_YAO_SEES_STRIP", "P_BREAKER_DARK", "P_PHOTO_PRINT"],
+  final_prophecy: ["P_FLARE_HEAD", "P_HEAD_ABOVE_FRAME", "P_SHADOW", "P_ROPE_TAUT", "P_TWO_RECORDS", "P_BREAKER_DARK", "P_PHOTO_PRINT"]
 };
 
 export const OBJECTS = {
@@ -250,11 +309,25 @@ const baseLayout = {
 export function sceneDefinition(id, loop = 1, inherited = {}) {
   const root = id.includes("_") ? id.split("_")[0] : id;
   const base = baseLayout[root] || baseLayout.studio;
+  const variant = variantLayout[id] || {};
+  const variantMeta = Object.values(SCENE_VARIANTS[root] || {}).find(item => item.id === id);
   const missing = new Set(inherited.missingItems || []);
-  const objects = Object.fromEntries(Object.entries(base.objects).filter(([key]) => !missing.has(key)).map(([key, pos]) => [key, {
+  const layout = { ...base.objects, ...(variant.objects || {}) };
+  if (root === "studio" && loop > 1 && inherited.priorRoutes?.at(-1)?.act1 === "breach") layout.chalkLine = [710, 315];
+  const objects = Object.fromEntries(Object.entries(layout).filter(([key]) => !missing.has(key)).map(([key, pos]) => [key, {
     id: key, x: pos[0], y: pos[1], held: false, visible: true, state: {}
   }]));
-  return { ...base, id, title: loop > 1 ? `${base.title} · 第${loop}遍` : base.title, objects, npcs: structuredClone(base.npcs) };
+  return {
+    ...base,
+    ...variant,
+    id,
+    title: loop > 1 ? `${variantMeta?.title || base.title} · 第${loop}遍` : (variantMeta?.title || base.title),
+    spawn: variant.spawn || base.spawn,
+    objects,
+    npcs: { ...structuredClone(base.npcs), ...(variant.npcs || {}) },
+    environment: { ...(variant.environment || {}) },
+    initialFlags: { ...(variant.flags || {}) }
+  };
 }
 
 export const TUTORIAL = [

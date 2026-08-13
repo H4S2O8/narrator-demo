@@ -1,6 +1,6 @@
-import { ACTIONS, legalActions } from "../data/actions.js";
-import { PAST, PROPHECIES, SCENE_VARIANTS } from "../data/content.js";
-import { commitRoute, filterWorlds, hydrateScene, occupyProphecy, schedule, syncFlags } from "./state.js";
+import { ACTIONS, legalActions } from "../data/actions.js?v=20260813f";
+import { PAST, PROPHECIES, SCENE_VARIANTS } from "../data/content.js?v=20260813f";
+import { commitRoute, filterWorlds, hydrateScene, occupyProphecy, schedule, syncFlags } from "./state.js?v=20260813f";
 
 function releaseHand(state, id) {
   for (const hand of ["left", "right"]) if (state.player.hands[hand] === id) state.player.hands[hand] = null;
@@ -112,7 +112,7 @@ export function executeAction(state, action, context) {
       result.messages.push("铁盆罩住头部，也遮挡了上方视野并放大雨声。 ");
       break;
     case "trace":
-      addTrace(state, effect.trace, effect.target); setFlags(state, effect.flags); setProgress(state, effect.progress);
+      addTrace(state, effect.trace, effect.target); setFlags(state, effect.flags);
       result.messages.push("面粉落在地面和附近物体上。它既是痕迹，也会被水、鞋底和风继续带走。 ");
       break;
     case "hide": {
@@ -126,12 +126,12 @@ export function executeAction(state, action, context) {
         result.narratorNode = result.narratorNode || "use_camera";
         result.messages.push("快门落下，但相机里是否有可曝光胶片仍属于几条不同历史。 ");
       } else {
-        setFlags(state, effect.flags); addTrace(state, `record_${effect.target}`, effect.target); setProgress(state, effect.progress);
+        setFlags(state, effect.flags); addTrace(state, `record_${effect.target}`, effect.target);
         result.messages.push("快门落下。这份记录也固定了相机位置、光路和拍摄者当时的时间。 ");
       }
       break;
     case "monitor": {
-      drop(state, "camera"); setFlags(state, effect.flags); setProgress(state, effect.progress);
+      drop(state, "camera"); setFlags(state, effect.flags);
       const monitor = { id: `M${state.observations.length + 1}`, target: effect.target, start: state.time, active: true };
       state.observations.push(monitor);
       if (effect.excludes) {
@@ -185,44 +185,56 @@ export function executeAction(state, action, context) {
       break;
     }
     case "equip_body": setFlags(state, effect.flags); result.messages.push("救援绳系在苏岚腰间，之后的拉力会直接作用在身体上。 "); break;
-    case "give_end": setFlags(state, effect.flags); setProgress(state, effect.progress); result.messages.push(`${state.npcs[effect.target].name}接住绳的另一端。`); break;
-    case "tie": setFlags(state, effect.flags); setProgress(state, effect.progress); addTrace(state, "rope_knot", effect.target); result.messages.push("绳结固定下来。结法、受力方向和解开时间都成为后续事实。 "); break;
-    case "body_anchor": setFlags(state, effect.flags); setProgress(state, effect.progress); addEffect(state, "rope_tension", {}, 1.4); result.messages.push("苏岚把自己的重量交给绳。她不能再自由移动而不改变整条受力链。 "); break;
+    case "give_end": setFlags(state, effect.flags); result.messages.push(`${state.npcs[effect.target].name}接住绳的另一端。`); break;
+    case "tie": setFlags(state, effect.flags); addTrace(state, "rope_knot", effect.target); result.messages.push("绳结固定下来。结法、受力方向和解开时间都成为后续事实。 "); break;
+    case "body_anchor": setFlags(state, effect.flags); addEffect(state, "rope_tension", {}, 1.4); result.messages.push("苏岚把自己的重量交给绳。她不能再自由移动而不改变整条受力链。 "); break;
     case "drag": {
       const object=state.objects[effect.target]; if(object){object.x=state.player.x+45;object.y=state.player.y;}
       setFlags(state,effect.flags);setProgress(state,effect.progress);addTrace(state,"drag_mark",effect.target);
       result.messages.push("绳的拉力拖动背景架，地面留下与移动方向一致的擦痕。 ");break;
     }
     case "float": {
-      const object=state.objects[effect.target];drop(state,effect.target);object.state.floating=true;setFlags(state,effect.flags);addTrace(state,"float_start",effect.target);
+      const object=state.objects[effect.target];drop(state,effect.target);object.state.floating=true;object.state.lost=true;setFlags(state,effect.flags);addTrace(state,"float_start",effect.target);
       result.messages.push("照片落入水面，沿真实水流开始漂移。它也不再由苏岚直接控制。 ");break;
     }
     case "give": {
       drop(state, effect.item); state.objects[effect.item].visible = false; state.objects[effect.item].state.heldBy = effect.target;
-      setFlags(state, effect.flags); setProgress(state, effect.progress);
+      state.npcs[effect.target].trust += 1;
+      state.npcs[effect.target].knowledge = [...new Set([...(state.npcs[effect.target].knowledge || []), `received_${effect.item}`])];
+      setFlags(state, effect.flags);
       result.messages.push(`${state.npcs[effect.target].name}接过${state.objects[effect.item].name}。`);
       break;
     }
-    case "brace": setFlags(state, effect.flags); setProgress(state, effect.progress); addEffect(state, "brace", { target: effect.target }, 1.1); if (effect.prophecy) occupyProphecy(state, effect.prophecy[0], effect.prophecy[1]); result.messages.push("苏岚维持住受力姿势。移动、受伤或积水都会改变支撑结果。 "); break;
+    case "brace": setFlags(state, effect.flags); addEffect(state, "brace", { target: effect.target }, 1.1); if (effect.prophecy) occupyProphecy(state, effect.prophecy[0], effect.prophecy[1]); result.messages.push("苏岚维持住受力姿势。移动、受伤或积水都会改变支撑结果。 "); break;
     case "damage": {
-      const object = state.objects[effect.target]; object.state.damage = (object.state.damage || 0) + effect.amount; setProgress(state, effect.progress);
+      const object = state.objects[effect.target]; object.state.damage = (object.state.damage || 0) + effect.amount;
       if (object.state.damage >= 3) { object.state.broken = true; state.flags[`${effect.target}_broken`] = true; }
       addEffect(state, object.state.broken ? "wall_break" : "impact", { x: object.x, y: object.y }, object.state.broken ? 1.25 : 0.55);
       result.messages.push(`${object.name}受到撞击${object.state.broken ? "，结构被打穿" : "，但还没有完全破开"}。`);
       break;
     }
-    case "repair": setFlags(state, effect.flags); setProgress(state, effect.progress); schedule(state, 2.5, "repair_complete", { target: effect.target }); result.messages.push("维修开始。苏岚需要在附近维持动作，离开会留下未完成状态。 "); break;
-    case "toggle": setFlags(state, effect.flags); if (effect.target === "pump") state.environment.pump = effect.value; setProgress(state, effect.progress); result.messages.push("机械状态切换，水压开始按新条件演化。 "); break;
-    case "power": state.environment.power = effect.value; setProgress(state, effect.progress); result.messages.push(effect.value ? "照明、泵和监控同时恢复。" : "照明、泵和监控同时失去供电。 "); break;
-    case "door": setFlags(state, effect.flags); setProgress(state, effect.progress); state.flags[`door_${effect.mode}`] = true; addEffect(state, effect.mode === "open" ? "flood_burst" : "door_lock", {}, 1.3); result.messages.push(effect.mode === "open" ? "卷帘门离开地面，外侧水压立刻作用进来。" : effect.mode === "seal" ? "门缝被封住，墙外水压继续增加。" : "铁盆卡进门底，门获得一条新的开启路径。 "); break;
+    case "repair": setFlags(state, effect.flags); schedule(state, 2.5, "repair_complete", { target: effect.target }); result.messages.push("维修开始。苏岚需要在附近维持动作，离开会留下未完成状态。 "); break;
+    case "toggle": setFlags(state, effect.flags); if (effect.target === "pump") state.environment.pump = effect.value; result.messages.push("机械状态切换，水压开始按新条件演化。 "); break;
+    case "power": state.environment.power = effect.value; if (effect.prophecy) occupyProphecy(state,effect.prophecy[0],effect.prophecy[1]); result.messages.push(effect.value ? "照明、泵和监控同时恢复。" : "照明、泵和监控同时失去供电。 "); break;
+    case "door": setFlags(state, effect.flags); state.flags[`door_${effect.mode}`] = true; addEffect(state, effect.mode === "open" ? "flood_burst" : "door_lock", {}, 1.3); result.messages.push(effect.mode === "open" ? "卷帘门离开地面，外侧水压立刻作用进来。" : effect.mode === "seal" ? "门缝被封住，墙外水压继续增加。" : "铁盆卡进门底，门获得一条新的开启路径。 "); break;
     case "command_npc": {
       const npc = state.npcs[effect.target]; npc.goal = effect.command; npc.target = context.namedObject?.id || context.nearObjects[0]?.id || null;
-      setFlags(state, effect.flags); setProgress(state, effect.progress);
+      npc.trust += effect.command === "close_eyes" ? 0 : 0.25;
+      setFlags(state, effect.flags);
       result.messages.push(`${npc.name}听见了。她/他会按自己的动机判断是否照做，而不是变成玩家的遥控物。`);
       break;
     }
     case "position": setFlags(state, effect.flags); if (effect.prophecy) occupyProphecy(state, effect.prophecy[0], effect.prophecy[1]); result.messages.push("苏岚进入放映光路，身体切断了银幕上的画面。 "); break;
+    case "scene_interaction": {
+      setFlags(state, effect.flags);
+      if (effect.trace) addTrace(state, effect.trace, effect.target);
+      if (effect.trust) state.npcs[effect.trust[0]].trust += effect.trust[1];
+      if (effect.prophecy) occupyProphecy(state, effect.prophecy[0], effect.prophecy[1]);
+      result.messages.push(effect.message);
+      break;
+    }
     case "ending_progress":
+      state.flags.final_intent = effect.choice;
       if (effect.choice === "boundary") {
         state.flags.eyes_closed_final = true;
         state.finalHold = { startedAt: state.time, required: 6.5, active: true, interrupted: false };
@@ -254,7 +266,7 @@ export function executeAction(state, action, context) {
     default:
       result.ok = false; result.messages.push("这项行动还没有可靠的世界规则。 ");
   }
-  setFlags(state, effect.flags); setProgress(state, effect.progress); syncFlags(state);
+  setFlags(state, effect.flags); if (result.ok) setProgress(state, effect.progress); syncFlags(state);
   state.timeline.push({ at: state.time, kind: "action", id: action.id, ok: result.ok });
   return result;
 }

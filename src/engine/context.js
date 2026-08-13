@@ -1,5 +1,5 @@
-import { OBJECTS } from "../data/content.js";
-import { heldIds } from "./state.js";
+import { OBJECTS } from "../data/content.js?v=20260813f";
+import { heldIds } from "./state.js?v=20260813f";
 
 export const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 

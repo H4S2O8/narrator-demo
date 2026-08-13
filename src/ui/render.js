@@ -1,4 +1,4 @@
-import { PROPHECIES } from "../data/content.js";
+import { PROPHECIES } from "../data/content.js?v=20260813f";
 
 const colors = { sulan: "#dfb76e", yao: "#c36f79", luhui: "#71aab2", luoyi: "#9fa86c" };
 const sprites = new Image();
@@ -11,6 +11,11 @@ function drawFloor(ctx, state, width, height) {
   ctx.strokeStyle = "rgba(220,220,205,.07)"; ctx.lineWidth = 1;
   for (let x = 16; x < width; x += 32) { ctx.beginPath(); ctx.moveTo(x, 62); ctx.lineTo(x, height); ctx.stroke(); }
   for (let y = 62; y < height; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
+  if (state.flags.roof_gap_open) { ctx.fillStyle="#050607";ctx.fillRect(455,62,92,height-62);ctx.strokeStyle="#8b7560";ctx.strokeRect(455,62,92,height-62); }
+  if (state.flags.screens_active) { ctx.fillStyle="rgba(94,150,145,.22)";for(let x=520;x<820;x+=92)ctx.fillRect(x,82,70,42); }
+  if (state.flags.projection_window) { ctx.fillStyle="rgba(229,214,163,.13)";ctx.beginPath();ctx.moveTo(790,120);ctx.lineTo(210,520);ctx.lineTo(610,520);ctx.closePath();ctx.fill(); }
+  if (state.flags.echo_corridor) { ctx.strokeStyle="rgba(190,185,160,.18)";for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(760,300,45+i*38,-1.1,1.1);ctx.stroke();} }
+  if (state.flags.continuous_exposure) { ctx.fillStyle="rgba(208,190,140,.12)";for(let x=80;x<900;x+=56)ctx.fillRect(x,88,32,20); }
   const waterY = height - state.environment.water * 360;
   if (state.environment.water > 0.01) {
     ctx.fillStyle = "rgba(43,100,113,.28)"; ctx.fillRect(0, waterY, width, height - waterY);

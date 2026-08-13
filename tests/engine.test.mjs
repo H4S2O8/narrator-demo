@@ -5,7 +5,7 @@ import { PAST, PROPHECIES } from "../src/data/content.js";
 import { createState, hydrateScene, commitPast, startProphecy, occupyProphecy, fulfillProphecy } from "../src/engine/state.js";
 import { buildContext } from "../src/engine/context.js";
 import { executeAction } from "../src/engine/actions.js";
-import { stepSimulation } from "../src/engine/simulation.js";
+import { stepSimulation, ACT_MIN_SECONDS } from "../src/engine/simulation.js";
 
 const meta = { version:1,loop:1,anchors:[],missingItems:[],strategyMemory:{},priorRoutes:[],reality:{} };
 const state = () => { const s=createState(structuredClone(meta)); hydrateScene(s,"studio"); s.started=true;s.paused=false; return s; };
@@ -61,8 +61,72 @@ test("signal shot damages its actual target and empty past prevents damage", () 
 
 test("all prophecy definitions can fulfill using at least one authored path", () => {
   for(const p of Object.values(PROPHECIES)) {
-    const s=state();startProphecy(s,p.id);for(const flag of p.paths[0].flags)s.flags[flag]=true;s.time=s.activeProphecy.dueAt;const r=fulfillProphecy(s);assert.ok(r.ok,p.id);
+    const s=state();for(const flag of p.paths[0].flags)s.flags[flag]=true;const started=startProphecy(s,p.id);assert.ok(started.ok,p.id);s.time=s.activeProphecy.dueAt;const r=fulfillProphecy(s);assert.ok(r.ok,p.id);
   }
+});
+
+test("narrator cannot announce a future without an existing guaranteed path",()=>{
+  const s=state();for(const path of PROPHECIES.P_SHADOW.paths)for(const flag of path.flags)delete s.flags[flag];
+  const result=startProphecy(s,"P_SHADOW");assert.equal(result.ok,false);assert.equal(s.activeProphecy,null);
+});
+
+test("inspection collapses an uncertain chamber into one lasting state",()=>{
+  const s=state();s.player.x=s.objects.flare.x;s.player.y=s.objects.flare.y;executeAction(s,get("take_flare"),buildContext(s,"拿枪"));
+  executeAction(s,get("inspect_flare"),buildContext(s,"检查信号枪"));stepSimulation(s,1,new Set(),()=>{});
+  assert.equal(new Set(s.worlds.map(world=>world.axes.flare)).size,1);
+});
+
+test("prophecy fulfillment changes the physical world",()=>{
+  const s=state();s.flags.basin_under_leak=true;const before=s.traces.length;assert.ok(startProphecy(s,"P_WATER_FROM_BASIN").ok);
+  stepSimulation(s,18.1,new Set(),()=>{});assert.equal(s.activeProphecy,null);assert.ok(s.traces.length>before);assert.ok(s.traces.some(trace=>trace.type==="basin_spill"));
+});
+
+test("every announced future still fulfills after its visible route is removed",()=>{
+  for(const prophecy of Object.values(PROPHECIES)){
+    const s=state();
+    for(const flag of prophecy.paths[0].flags)s.flags[flag]=true;
+    assert.ok(startProphecy(s,prophecy.id).ok,prophecy.id);
+    for(const path of prophecy.paths)for(const flag of path.flags)s.flags[flag]=false;
+    stepSimulation(s,prophecy.duration+.1,new Set(),()=>{});
+    assert.equal(s.activeProphecy,null,prophecy.id);
+    assert.ok(s.propheciesFulfilled.some(item=>item.id===prophecy.id),prophecy.id);
+  }
+});
+
+test("held objects survive scene changes in the same physical hands",()=>{
+  const s=state();s.player.x=s.objects.flour.x;s.player.y=s.objects.flour.y;
+  executeAction(s,get("take_flour"),buildContext(s,"拿起面粉"));
+  assert.equal(s.player.hands.left,"flour");
+  hydrateScene(s,"roof_yao");
+  assert.equal(s.player.hands.left,"flour");assert.equal(s.objects.flour.held,true);assert.equal(s.objects.flour.visible,false);
+  assert.equal(s.objects.flour.x,s.player.x);assert.equal(s.objects.flour.y,s.player.y);
+});
+
+test("at least ten narrator local optima create concrete delayed liabilities",()=>{
+  const checks={
+    H_FLARE_EMPTY:s=>s.flags.all_flare_uses_empty,
+    H_LUHUI_UNLOADED:s=>s.flags.luhui_cannot_have_repaired_pump&&s.worlds.every(w=>w.axes.pump!=="luhui_repaired"),
+    H_YAO_UNLOADED:s=>s.npcs.yao.goal==="watch_other"&&s.npcs.yao.trust<0,
+    H_KEY_MOVED:s=>s.flags.counter_key_unavailable,
+    H_LUHUI_KEY:s=>s.flags.exit_depends_on_luhui&&s.npcs.luhui.trust>0,
+    H_YAO_KEY:s=>s.flags.exit_depends_on_yao,
+    H_PHOTO_SEEN:s=>s.flags.photo_can_be_searched,
+    H_YAO_PHOTO:s=>s.flags.yao_witness_burden,
+    H_LUHUI_PHOTO:s=>s.flags.luhui_bargaining_knowledge,
+    H_PUMP_REPAIRED:s=>s.flags.darkroom_was_occupied,
+    H_LUHUI_PUMP:s=>s.flags.pump_depends_on_luhui,
+    H_SULAN_PUMP:s=>s.flags.sulan_darkroom_locked_time,
+    H_DOOR_OPENABLE:s=>s.environment.floodRate>.007,
+    H_BACK_UNLATCHED:s=>s.environment.floodRate>.007,
+    H_FILM_LOADED:s=>s.flags.film_frames_limited,
+    H_YAO_FILM:s=>s.flags.yao_camera_burden
+  };
+  let proven=0;
+  for(const [id,predicate] of Object.entries(checks)){
+    const s=state();const result=commitPast(s,id);
+    assert.ok(result.ok,id);assert.ok(predicate(s),id);proven+=1;
+  }
+  assert.ok(proven>=10);
 });
 
 test("final embodied hold requires continuous real game time and pauses honestly",()=>{
@@ -74,6 +138,7 @@ test("final embodied hold requires continuous real game time and pauses honestly
 
 test("boundary ending cannot resolve before the full embodied hold",()=>{
   const s=state();s.act=3;s.routes={act1:"cinema",act2:"alone",act3:null};s.flags.rope_body_anchor=true;
+  s.actStartedAt=s.time-ACT_MIN_SECONDS.act3;
   s.branchProgress={...s.branchProgress,boundary:3.9,sacrifice:1,escape:1};
   s.finalHold={startedAt:s.time,required:6.5,active:true,interrupted:false};s.flags.eyes_closed_final=true;
   stepSimulation(s,3,new Set(["KeyH"]),()=>{});

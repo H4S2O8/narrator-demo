@@ -23,7 +23,7 @@ createServer(async (req, res) => {
     const info = await stat(path);
     const finalPath = info.isDirectory() ? join(path, "index.html") : path;
     const body = await readFile(finalPath);
-    res.writeHead(200, { "Content-Type": mime[extname(finalPath)] || "application/octet-stream" });
+    res.writeHead(200, { "Content-Type": mime[extname(finalPath)] || "application/octet-stream", "Cache-Control":"no-store" });
     res.end(body);
   } catch {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });

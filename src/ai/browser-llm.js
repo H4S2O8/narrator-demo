@@ -1,7 +1,7 @@
-import { legalActions } from "../data/actions.js";
-import { NARRATOR_NODES, PAST, PROPHECIES } from "../data/content.js";
-import { fallbackParse } from "../engine/actions.js";
-import { narratorPrompt, parserPrompt } from "./prompts.js";
+import { legalActions } from "../data/actions.js?v=20260813f";
+import { NARRATOR_NODES, PAST, PROPHECIES } from "../data/content.js?v=20260813f";
+import { fallbackParse } from "../engine/actions.js?v=20260813f";
+import { narratorPrompt, parserPrompt } from "./prompts.js?v=20260813f";
 
 const MODEL_ID = "HuggingFaceTB/SmolLM2-135M-Instruct";
 
@@ -9,6 +9,7 @@ export class BrowserLLM {
   constructor(onStatus = () => {}) {
     this.onStatus = onStatus;
     this.generator = null;
+    this.loadPromise = null;
     this.loading = false;
     this.mode = "rules";
     this.lastNarratorSource = "rules";
@@ -16,40 +17,31 @@ export class BrowserLLM {
   }
 
   async load() {
-    if (this.loading || this.generator) return;
+    if (this.generator || this.mode === "llm") return true;
+    if (this.loadPromise) return this.loadPromise;
     this.loading = true;
     this.onStatus("loading", "正在浏览器内加载小型语言模型…");
-    try {
-      const module = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2");
-      module.env.allowLocalModels = false;
-      module.env.useBrowserCache = true;
-      this.generator = await module.pipeline("text-generation", MODEL_ID, { dtype: "q4" });
-      this.mode = "llm";
-      this.onStatus("ready", "浏览器语言模型已就绪");
-    } catch (error) {
-      this.mode = "rules";
-      this.onStatus("fallback", `模型暂时不可用，使用确定性策略：${error.message}`);
-    } finally {
-      this.loading = false;
-    }
+    this.loadPromise = (async()=>{
+      try {
+        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+        const module=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2");
+        module.env.allowLocalModels=false;module.env.useBrowserCache=true;
+        this.generator=await module.pipeline("text-generation",MODEL_ID,{dtype:"q4"});
+        this.loading=false;this.mode="llm";this.onStatus("ready","浏览器语言模型已就绪");return true;
+      } catch(error) {
+        this.loading=false;this.mode="rules";this.onStatus("fallback",`模型暂时不可用，使用确定性策略：${error.message}`);return false;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async chooseIndex(prompt, optionCount) {
-    if (!this.generator) return null;
-    const tokenizer = this.generator.tokenizer;
-    const model = this.generator.model;
-    const inputs = tokenizer(`${prompt}\nAnswer:`);
-    const output = await model(inputs);
-    const logits = output.logits;
-    const vocab = logits.dims.at(-1);
-    const sequence = logits.dims.at(-2);
-    const offset = (sequence - 1) * vocab;
-    const scores = [];
-    for (let index = 0; index < optionCount; index += 1) {
-      const tokenized = tokenizer(String(index), { add_special_tokens: false });
-      const tokenId = Number(tokenized.input_ids.data.at(-1));
-      scores.push(Number(logits.data[offset + tokenId]));
-    }
+    let scores;
+    if (this.generator) {
+      const tokenizer=this.generator.tokenizer,model=this.generator.model,inputs=tokenizer(`${prompt}\nAnswer:`),output=await model(inputs),logits=output.logits;
+      const vocab=logits.dims.at(-1),sequence=logits.dims.at(-2),offset=(sequence-1)*vocab;
+      scores=[];for(let index=0;index<optionCount;index+=1){const tokenized=tokenizer(String(index),{add_special_tokens:false});const tokenId=Number(tokenized.input_ids.data.at(-1));scores.push(Number(logits.data[offset+tokenId]));}
+    } else return null;
     const index = scores.indexOf(Math.max(...scores));
     this.lastCompletion = `scores:${scores.map(score => score.toFixed(2)).join(",")}`;
     return Number.isInteger(index) && index >= 0 ? { index } : null;
@@ -58,9 +50,13 @@ export class BrowserLLM {
   async parseAction(context) {
     const legal = legalActions(context);
     if (!legal.length) return null;
-    const exact = legal.filter(action => context.text === action.label || context.text.includes(action.label) || action.phrases.some(phrase => context.text === phrase || context.text.includes(phrase)));
+    const exact = legal.filter(action =>
+      context.text === action.label || context.text.includes(action.label) ||
+      action.phrases.some(phrase => context.text === phrase || (phrase.length >= 3 && context.text.includes(phrase)))
+    );
     if (exact.length === 1) return { action: exact[0], confidence: 1, source: "authored_phrase" };
-    if (this.generator) {
+    if (!this.generator && this.mode !== "llm") await this.load();
+    if (this.generator || this.mode === "llm") {
       const choice = await this.chooseIndex(parserPrompt(context, legal), legal.length);
       if (Number.isInteger(choice?.index) && legal[choice.index]) return { action: legal[choice.index], confidence: choice.confidence || 0.5, source: "llm" };
     }
@@ -71,12 +67,15 @@ export class BrowserLLM {
     const ids = (NARRATOR_NODES[node] || []).filter(id => id === "SILENCE" || PAST[id] || PROPHECIES[id]);
     const legal = ids.filter(id => {
       if (id === "SILENCE") return true;
-      if (PAST[id]) return state.worlds.some(world => PAST[id].keep.includes(world.axes[PAST[id].axis]));
-      return !state.activeProphecy;
+      if (PAST[id]) {
+        if (state.meta.loop >= 3 && PAST[id].keep.length > 1) return false;
+        return state.worlds.some(world => PAST[id].keep.includes(world.axes[PAST[id].axis]));
+      }
+      return !state.activeProphecy && !state.propheciesFulfilled.some(item => item.id === id) && PROPHECIES[id].paths.some(path => path.flags.every(flag => state.flags[flag]));
     });
     if (!legal.length) return "SILENCE";
     const evaluated = legal.map(id => ({ id, effects: this.evaluateNarratorOperation(state, id) }));
-    if (this.generator) {
+    if (this.generator || this.mode === "llm") {
       const choice = await this.chooseIndex(narratorPrompt(state, node, evaluated), legal.length);
       if (Number.isInteger(choice?.index) && legal[choice.index]) {
         this.lastNarratorSource = "llm";

@@ -12,7 +12,7 @@ function candidateStates() {
   for(const sceneId of sceneIds){
     const base=createState(structuredClone(meta));hydrateScene(base,sceneId);base.started=true;base.act=sceneId.includes("_")?3:sceneId==="studio"?1:2;
     base.environment.water=.5;base.environment.power=true;base.environment.pump=true;
-    Object.assign(base.flags,{pump_repaired:true,rope_on_player:true,head_under_frame:true,body_supporting_frame:true,body_holds_breaker:true,rope_body_anchor:true,near_red_rope:true,basin_under_leak:true,basin_water:true,basin_red_water:true,strip_hidden:true,strip_visible:true,strip_photo:true,frame_counterweighted:true,frame_on_shelf:true,yao_witness_chain:true,luhui_mutual_alibi:true,embodied_chain:true});
+    Object.assign(base.flags,{pump_repaired:true,rope_on_player:true,rope_with_luhui:true,head_under_frame:true,body_supporting_frame:true,body_holds_breaker:true,rope_body_anchor:true,near_red_rope:true,basin_under_leak:true,basin_water:true,basin_red_water:true,strip_hidden:true,strip_visible:true,strip_photo:true,frame_counterweighted:true,frame_on_shelf:true,yao_witness_chain:true,luhui_mutual_alibi:true,embodied_chain:true});
     base.traces.push({type:"flour_ring",x:200,y:200,disturbed:false});
     for(const object of Object.values(base.objects)){object.state.water=object.id==="basin"?"red":object.state.water;states.push(positioned(base,object.x,object.y));}
     for(const npc of Object.values(base.npcs))states.push(positioned(base,npc.x,npc.y));

@@ -1,11 +1,13 @@
-import { TUTORIAL, PAST, PROPHECIES, endingCopy, ACT1, ACT2, SCENE_VARIANTS } from "./data/content.js";
-import { buildContext } from "./engine/context.js";
-import { executeAction, getAction } from "./engine/actions.js";
-import { createState, hydrateScene, commitPast, startProphecy, finaliseLoop } from "./engine/state.js";
-import { stepSimulation } from "./engine/simulation.js";
-import { BrowserLLM } from "./ai/browser-llm.js";
-import { renderGame, updateProphecyUI } from "./ui/render.js";
-import { Sound } from "./ui/audio.js";
+import { TUTORIAL, PAST, PROPHECIES, endingCopy, ACT1, ACT2, SCENE_VARIANTS } from "./data/content.js?v=20260813f";
+import { buildContext } from "./engine/context.js?v=20260813f";
+import { executeAction, getAction } from "./engine/actions.js?v=20260813f";
+import { createState, hydrateScene, commitPast, startProphecy, finaliseLoop } from "./engine/state.js?v=20260813f";
+import { stepSimulation } from "./engine/simulation.js?v=20260813f";
+import { BrowserLLM } from "./ai/browser-llm.js?v=20260813f";
+import { renderGame, updateProphecyUI } from "./ui/render.js?v=20260813f";
+import { Sound } from "./ui/audio.js?v=20260813f";
+
+const BUILD_ID = "20260813f";
 
 const root = document;
 const canvas = root.querySelector("#stage");
@@ -27,6 +29,7 @@ let endingShown = false;
 hydrateScene(state, "studio");
 root.querySelector("#loop-mark").textContent = state.meta.loop;
 window.__FANCHAO__ = {
+  build: BUILD_ID,
   get state() { return state; },
   buildContext: raw => buildContext(state, raw),
   async act(raw) {
@@ -46,7 +49,8 @@ window.__FANCHAO__ = {
     state.paused=was;return state;
   },
   setPaused,
-  maybeNarrator
+  maybeNarrator,
+  loadModel:()=>llm.load()
 };
 const llm = new BrowserLLM((mode, message) => {
   state.parser.modelReady = mode === "ready"; state.parser.modelMode = mode;
@@ -83,16 +87,17 @@ function narrationIntro() {
 
 function showTutorial() {
   if (state.tutorial.complete) { tutorialCard.classList.add("hidden"); return; }
-  const item = TUTORIAL[state.tutorial.index];
+  const item = TUTORIAL.find(([id]) => !state.tutorial.seen.includes(id));
   if (!item) { state.tutorial.complete = true; tutorialCard.classList.add("hidden"); return; }
   tutorialCard.classList.remove("hidden");
-  root.querySelector("#tutorial-step").textContent = `教程 ${state.tutorial.index + 1}/${TUTORIAL.length}`;
+  root.querySelector("#tutorial-step").textContent = `教程 ${state.tutorial.seen.length + 1}/${TUTORIAL.length}`;
   root.querySelector("#tutorial-text").textContent = item[1];
 }
 
 function advanceTutorial(trigger) {
-  const item = TUTORIAL[state.tutorial.index];
-  if (item?.[0] === trigger) { state.tutorial.index += 1; showTutorial(); }
+  if (!state.tutorial.seen.includes(trigger)) state.tutorial.seen.push(trigger);
+  state.tutorial.index = state.tutorial.seen.length;
+  showTutorial();
 }
 
 function setPaused(value, reason = "manual") {
@@ -118,38 +123,51 @@ function closeInput(session = inputSession) {
   setPaused(state.pauseBeforeInput, state.pauseBeforeInput ? (state.pauseReasonBeforeInput || "manual") : "input");
 }
 
+function finishInputUi() {
+  state.inputOpen=false;inputBar.classList.add("hidden");command.blur();
+  setPaused(state.pauseBeforeInput,state.pauseBeforeInput?(state.pauseReasonBeforeInput||"manual"):"input");
+}
+
 async function submitInput() {
   if (submitting) return;
   const raw = command.value.trim(); if (!raw) { closeInput(); return; }
   const session = inputSession;
   submitting = true;
-  state.stats.wordsEntered += raw.length;
-  const context = buildContext(state, raw);
-  emit("action", `“${raw}”`);
-  root.querySelector("#submit-command").disabled = true;
-  let parsed;
-  try { parsed = await llm.parseAction(context); } catch (error) { emit("system", `意图模型失败：${error.message}`); }
-  root.querySelector("#submit-command").disabled = false;
-  if (!parsed) {
-    state.stats.rejected += 1; sound.error();
-    const near = context.nearObjects.map(o => o.name).join("、") || "没有可触及物品";
-    emit("system", `没有找到能诚实执行的预设行动。附近：${near}；双手：${context.heldObjects.map(o=>o.name).join("、") || "空"}。`);
-    submitting = false; return;
+  const submitButton=root.querySelector("#submit-command");submitButton.disabled=true;
+  try {
+    state.stats.wordsEntered += raw.length;
+    const context = buildContext(state, raw);
+    emit("action", `“${raw}”`);
+    let parsed;
+    const parseStartedAt=state.time;
+    try { parsed = await llm.parseAction(context); } catch (error) { emit("system", `意图模型失败：${error.message}`); }
+    state.parser.lastTimeDrift=state.time-parseStartedAt;
+    if (!parsed) {
+      state.stats.rejected += 1; sound.error();
+      const near = context.nearObjects.map(o => o.name).join("、") || "没有可触及物品";
+      emit("system", `没有找到能诚实执行的预设行动。附近：${near}；双手：${context.heldObjects.map(o=>o.name).join("、") || "空"}。`);
+      return;
+    }
+    state.parser.lastSource=parsed.source;state.parser.lastModelOutput=llm.lastCompletion;
+    const latestContext = buildContext(state, raw);
+    if (!parsed.action.available(latestContext)) {
+      state.stats.rejected += 1; sound.error(); emit("system", "模型选择的行动已经因当前状态变化而失效，没有执行。 "); return;
+    }
+    const result = executeAction(state, parsed.action, latestContext);
+    for (const message of result.messages) emit(result.ok ? "action" : "system", message);
+    finishInputUi();
+    if (result.ok) sound.action(); else sound.error();
+    updatePatterns(parsed.action.id);
+    await maybeNarrator(result.narratorNode);
+    if (parsed.action.effect.type === "take" || parsed.action.effect.type === "drop") advanceTutorial("hold");
+    if (parsed.action.effect.type === "monitor" || parsed.action.effect.type === "trace") advanceTutorial("observe");
+    if (state.ending) showEnding();
+  } catch (error) {
+    emit("system", `行动已停止在可恢复状态：${error.message}`);
+  } finally {
+    submitButton.disabled=false;submitting=false;
+    if(state.inputOpen)finishInputUi();
   }
-  const latestContext = buildContext(state, raw);
-  if (!parsed.action.available(latestContext)) {
-    state.stats.rejected += 1; sound.error(); emit("system", "模型选择的行动已经因当前状态变化而失效，没有执行。 "); submitting = false; return;
-  }
-  const result = executeAction(state, parsed.action, latestContext);
-  for (const message of result.messages) emit(result.ok ? "action" : "system", message);
-  if (result.ok) sound.action(); else sound.error();
-  updatePatterns(parsed.action.id);
-  await maybeNarrator(result.narratorNode);
-  if (parsed.action.effect.type === "take" || parsed.action.effect.type === "drop") advanceTutorial("hold");
-  if (parsed.action.effect.type === "monitor" || parsed.action.effect.type === "trace") advanceTutorial("observe");
-  if (state.ending) showEnding();
-  submitting = false;
-  closeInput(session);
 }
 
 function updatePatterns(actionId) {
@@ -209,6 +227,7 @@ function showEnding() {
   if (endingShown) return;
   endingShown = true;
   setPaused(true);
+  tutorialCard.classList.add("hidden");root.querySelector("#prophecy").classList.add("hidden");
   const data = endingCopy(state);
   const curtain = root.querySelector("#curtain"); curtain.classList.remove("hidden");
   const block = curtain.querySelector(".title-block");
@@ -230,11 +249,14 @@ function frame(now) {
 }
 
 root.querySelector("#start-button").addEventListener("click", () => {
-  sound.ensure(); root.querySelector("#curtain").classList.add("hidden"); state.started = true; setPaused(false); narrationIntro(); llm.load();
+  sound.ensure(); root.querySelector("#curtain").classList.add("hidden"); state.started = true; setPaused(false); narrationIntro();
 });
 root.querySelector("#submit-command").addEventListener("click", submitInput);
 root.querySelector("#cancel-command").addEventListener("click", closeInput);
-command.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); if (!submitting) submitInput(); } else if (event.key === "Escape" && !submitting) closeInput(); });
+command.addEventListener("keydown", event => {
+  if (event.key === "Enter") { event.preventDefault();event.stopPropagation();if (!submitting) submitInput(); }
+  else if (event.key === "Escape") { event.stopPropagation();if (!submitting) closeInput(); }
+});
 window.addEventListener("keydown", event => {
   if (state.inputOpen) return;
   if (event.code === "Enter") { event.preventDefault(); openInput(); return; }

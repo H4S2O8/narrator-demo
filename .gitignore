@@ -1,4 +1,12 @@
 .test-chrome/
+.test-chrome-*/
+.test-artifacts/
+.test-temp/
+.browser-test.*
+.server.*
+.server*.out
+.server*.err
+.llm-test.*
 artifacts-*.png
 route-*.png
 *.pid
