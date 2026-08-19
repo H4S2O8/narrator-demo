@@ -1,0 +1,62 @@
+{
+  "version": 3,
+  "purpose": "第一章运行时带帧美术；每张图是同一场景、同一机构、同一镜位的三帧状态变化。",
+  "style": "原创俯视封闭房间；粗重墨线、脏紫与赭色、夸张且迷幻；不复制任何既有游戏角色、物品、房间或贴图。",
+  "runtime_format": "Godot 使用 JPG；网页报告使用同名 WebP。两者来自同一张生成原图。",
+  "frame_meaning": [
+    "机构存在但预言尚未压下",
+    "预言侵入，既有机构进入连续运动",
+    "预言已由同一机构完成，留下可检查的状态"
+  ],
+  "sheets": [
+    {
+      "id": "ceiling-door",
+      "file": "scene-ceiling-door-frames-v3.webp",
+      "stages": [0],
+      "source": "exec-ba295fae-af26-4a60-b9ad-4da2c24dd2c8.png",
+      "mechanism": "门板、铰链、棘轮"
+    },
+    {
+      "id": "wall-phone",
+      "file": "scene-wall-phone-frames-v3.webp",
+      "stages": [1, 5],
+      "source": "exec-7d0d4675-2df3-4b47-95ed-fc3254d031dc.png",
+      "mechanism": "电话、卷线轮、红线与地板导向"
+    },
+    {
+      "id": "table-strikes",
+      "file": "scene-table-strikes-frames-v3.webp",
+      "stages": [2, 3, 6],
+      "source": "exec-bd2ae700-5bab-44bd-bb2b-626390f91afd.png",
+      "mechanism": "饭桌、桌底凸轮、配重轴"
+    },
+    {
+      "id": "silhouette-cutter",
+      "file": "scene-silhouette-cutter-frames-v3.webp",
+      "stages": [4],
+      "source": "exec-a2bb430c-d4a7-41e0-b237-42ed25a1bbfe.png",
+      "mechanism": "投影灯、扫描布、剪影刀轨"
+    },
+    {
+      "id": "resonant-ceiling",
+      "file": "scene-resonant-ceiling-frames-v3.webp",
+      "stages": [7],
+      "source": "exec-e3871696-17f1-49d1-bdeb-175533440d18.png",
+      "mechanism": "九格天花板、声源定位与坠落板"
+    },
+    {
+      "id": "frost-frame",
+      "file": "scene-frost-frame-frames-v3.webp",
+      "stages": [8],
+      "source": "exec-661c54a7-4c16-49a8-a7a3-9a20fe0ade01.png",
+      "mechanism": "霜槽、四边齿条与门框"
+    },
+    {
+      "id": "answer-box",
+      "file": "scene-answer-box-frames-v3.webp",
+      "stages": [9],
+      "source": "exec-24d5e989-59b1-4c7b-bd78-0406c674ccc4.png",
+      "mechanism": "一个中心槽、九个外围槽、铰链书写面"
+    }
+  ]
+}

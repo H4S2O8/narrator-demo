@@ -1,0 +1,270 @@
+{
+  "version": "3.0.0",
+  "judgmentRule": {
+    "acceptsRouteNames": false,
+    "acceptsChecklistAnswers": false,
+    "runtimeHasCompletionMethods": false,
+    "runtimeModel": "active_prophecy_plus_one_state_predicate",
+    "evaluationMoment": "预言激活后，每次相关物品状态变化都读取一次完整世界快照；有明确时刻/计数的预言还会在该时刻强制读取。状态谓词第一次从 false 变为 true 时立即锁定完成。",
+    "methodBlindness": "运行时输入不包含路线编号、动作名称、解法标签或设计者意图；只包含该时刻各物品身上的状态、几何关系、事件先后和预言信用。",
+    "readsOnly": ["worldState", "eventLog", "timeOrder", "objectIdentity", "geometry", "ownership", "prophecyCredit"],
+    "positiveStateTracesRequiredPerProphecy": 8,
+    "negativeStateTracesRequiredPerProphecy": 3,
+    "principle": "八条路线只存在于关卡完成后的自动化可达性测试，不进入运行时。任何未列出的第九条路径，只要让同一个状态谓词成立，也必须通过。"
+  },
+  "branchingRule": {
+    "readsLevel": 8,
+    "noAggregateScores": true,
+    "forbiddenSummaries": ["墙损坏率", "房间安全分", "路线好坏分", "创伤值百分比", "整体完整度百分比"],
+    "preserveExactly": ["每件物品的状态ID", "所有者", "世界坐标与朝向", "接触与连接关系", "墙面/地板命中单元", "局部多边形", "脱落物ID及其变换", "洞口和堵塞物的真实碰撞体", "事件先后", "碎片来路集合"],
+    "level8Selection": "关间门槛只对已经固定的完整状态图做离散模式匹配；墙仍是哪一格脱落、脱落物在哪里、哪条路径能通过，不归纳成一个数字。",
+    "finalStructure": "九组关间分流；终点九个假结局和一个真结局；部分中间分支可落入碎片组合已不可达的失败假结局。"
+  },
+  "damageModels": [
+    {
+      "beatId": "ceiling_door",
+      "damageId": "D01-embedding",
+      "name": "压入地板",
+      "stateFields": ["firstImpactBodyId", "impactImpulse", "embeddedDepth", "coveredArea", "bodyIntegrity", "routeOcclusion"],
+      "defaultVictim": "fragment_A",
+      "defaultSeverity": "碎片被整面门板压进地板，嵌入深度超过可徒手取出阈值，落区暂时堵塞。",
+      "canBeWeakenedBy": ["降低门板落下前的有效冲量", "让较厚承压物成为第一接触体", "改变第一落点的局部地板高度", "把重要物移出覆盖多边形", "让脱落地板而非房间主地板吸收嵌入"],
+      "cannotBeCancelled": "第三响后的门板第一次向下撞击必须发生。"
+    },
+    {
+      "beatId": "wall_reel_phone",
+      "damageId": "D02-entanglement",
+      "name": "缠绕与拖入",
+      "stateFields": ["firstCapturedBodyId", "loopTension", "wallpaperOverlap", "compressionRatio", "ownershipLoss", "cordTopology"],
+      "defaultVictim": "fragment_B",
+      "defaultSeverity": "碎片失去所有权并越过墙纸平面，取回路径被线圈封闭。",
+      "canBeWeakenedBy": ["改变第一捕获物", "增大被捕获联合体使其无法完全通过裂口", "缩短进入墙纸的有效行程", "改变线圈拓扑使张力由固定物承担", "保留对被捕获物的第二连接"],
+      "cannotBeCancelled": "第七码归零后卷线轮必须收到底，并完成一次第一捕获物拖入。"
+    },
+    {
+      "beatId": "dinner_clamp",
+      "damageId": "D03-seam-compression",
+      "name": "桌缝压扁",
+      "stateFields": ["seamContents", "compressionRatio", "contactDuration", "tableClosure", "bodyIntegrity", "fragmentReachability"],
+      "defaultVictim": "fragment_C",
+      "defaultSeverity": "碎片与第三只碗共同被压至原厚度的两成以下。",
+      "canBeWeakenedBy": ["清空桌缝", "让可牺牲薄物承受压合", "让容器边沿先承压", "缩短重要物停留在缝内的时间", "从缝下打开退出空间"],
+      "cannotBeCancelled": "钥匙声后两半桌面的缝合接触必须发生。"
+    },
+    {
+      "beatId": "table_strikes",
+      "damageId": "D04-projection-impact",
+      "name": "第三击抛射",
+      "stateFields": ["impactCount", "lightestLooseBodyIdAtThirdImpact", "projectileVelocity", "wallImpactCell", "bodyIntegrity", "wallDamage"],
+      "defaultVictim": "fragment_D",
+      "defaultSeverity": "碎片以最高速度撞上墙面，碎片和命中墙格都发生局部破坏。",
+      "canBeWeakenedBy": ["改变第三击时最轻松动物", "增加碎片质量", "降低桌面第三击的倾角", "让容器承担抛射", "让抛射物命中软质墙面局部"],
+      "cannotBeCancelled": "听筒被收回后桌面必须完成三次地面撞击，第三次必须产生一个撞墙物。"
+    },
+    {
+      "beatId": "likeness_cutter",
+      "damageId": "D05-outline-removal",
+      "name": "轮廓被剪走",
+      "stateFields": ["scanCount", "candidateSimilarity", "selectedBodyId", "removedPolygon", "floorHoleArea", "bodyReachability"],
+      "defaultVictim": "fragment_E",
+      "defaultSeverity": "碎片及其下方局部地板被完整移除，留下不可跨越洞口。",
+      "canBeWeakenedBy": ["改变最高相似候选", "减小被选轮廓面积", "让覆盖层而非底层物被剪", "把重要物移出扫描平面", "控制洞口生成在不阻断路线的位置"],
+      "cannotBeCancelled": "第三次睁眼后剪影机必须移除当时相似度最高的合格轮廓。"
+    },
+    {
+      "beatId": "red_tether",
+      "damageId": "D06-drag-compression",
+      "name": "拖进门缝",
+      "stateFields": ["farthestEligibleBodyIdAtLock", "capturedBodyId", "tetherTension", "doorGapCompression", "dragDistance", "ownerAfterDrag"],
+      "defaultVictim": "fragment_F",
+      "defaultSeverity": "碎片从最远点被拖到门缝并压缩为扁影，玩家失去当前所有权。",
+      "canBeWeakenedBy": ["改变最远合格物", "缩短重要物到门的距离", "让联合体另一端先进入门缝", "增加被捕获体厚度限制压入距离", "保留第二锚点降低拖行距离"],
+      "cannotBeCancelled": "钥匙一圈结束后红绳必须捕获并拖动锁定时最远的合格物。"
+    },
+    {
+      "beatId": "ten_minute_sun",
+      "damageId": "D07-door-bite",
+      "name": "翻桌与门夹",
+      "stateFields": ["tableRotation", "contentTrajectories", "firstDoorImpactBodyId", "doorClampDepth", "exitBlockedArea", "bodyIntegrity"],
+      "defaultVictim": "fragment_G",
+      "defaultSeverity": "碎片作为第一撞门物被门夹住，并使主要出口大面积堵塞。",
+      "canBeWeakenedBy": ["改变第一撞门物", "改变桌面翻转坡向", "降低目标物撞门速度", "让软物承担门夹", "控制被夹物面积使出口仍可通过"],
+      "cannotBeCancelled": "太阳灯熄灭后饭桌必须翻转，且至少一个原桌面物首先撞门并被夹住。"
+    },
+    {
+      "beatId": "resonant_ceiling",
+      "damageId": "D08-overhead-collapse",
+      "name": "声源上方坠落",
+      "stateFields": ["silenceStart", "firstSoundEventId", "soundOrigin", "selectedPanelId", "panelImpactPosition", "debrisPolygons", "routeOcclusion"],
+      "defaultVictim": "fragment_H",
+      "defaultSeverity": "漏水碗产生第一声，对应天花板整块落在碎片位置并生成堵路碎屑。",
+      "canBeWeakenedBy": ["在安全区制造更早的第一声", "移动默认声源", "选择较小天花板块对应区", "清空声源落点", "让坠落板形成桥而非堵路"],
+      "cannotBeCancelled": "五秒静默后的第一声音必须令其正上方共振板落到声音出生位置。"
+    },
+    {
+      "beatId": "winter_frame",
+      "damageId": "D09-frame-compression",
+      "name": "四边门框合拢",
+      "stateFields": ["frostThresholdTime", "frameSidePositions", "firstBodyInDoorwayId", "lockShapeCompression", "doorwayFreeArea", "alternateRouteOpen"],
+      "defaultVictim": "fragment_I",
+      "defaultSeverity": "最后碎片被四边门框压成锁形，门洞自由面积归零。",
+      "canBeWeakenedBy": ["改变门洞第一物", "用可牺牲软物承担压形", "移动可拆门槛改变判定区域", "让侧墙既有缺口保持可达", "控制承压物尺寸使门洞仍有剩余面积"],
+      "cannotBeCancelled": "霜线接触门槛后四边门框必须完成一次向中心压合，并压形门洞中的第一物。"
+    }
+  ],
+  "interStageBranches": [
+    {
+      "transition": "ceiling_door -> wall_reel_phone",
+      "selectionMoment": "门板完成第一次撞击且局部损伤、碎片 A 可达性均已固定之后。",
+      "dependencies": ["firstImpactBodyId", "embeddedDepth", "detachedFloorParts", "fragment_A.reachable"],
+      "branches": [
+        {"id":"T01-carry","gate":"fragment_A.owner == player","nextVariant":"线圈悬空室","inherits":["fragment_A owner","door impact sound"],"keyChoice":"玩家亲自压实碎片所有权，下一关立即获得可用碎片但双手占用。"},
+        {"id":"T01-leave","gate":"fragment_A.reachable && fragment_A.owner != player","nextVariant":"地面线圈室","inherits":["fragment_A exact position","floor local damage"],"keyChoice":"玩家暂不拿碎片，保留它与后续线圈发生关系的空间。"},
+        {"id":"T01-breach","gate":"ceiling_door.firstImpactCell.detachedPartId != null","nextVariant":"墙内检修室","inherits":["firstImpactCell.detachedPartId","detachedPart.worldPolygon","detachedPart.worldTransform"],"keyChoice":"玩家以真实脱落的地板片换出一条新的物理入口。"}
+      ]
+    },
+    {
+      "transition": "wall_reel_phone -> dinner_clamp",
+      "selectionMoment": "第七码归零后的第一捕获物和墙纸重叠量固定之后。",
+      "dependencies": ["firstCapturedBodyId", "cordTopology", "wallpaperOverlap", "fragment_B.reachable"],
+      "branches": [
+        {"id":"T02-short-line","gate":"cord.freeEnd.attachedTo == capturedBody.id && cord.wallAnchor == reel.innerAnchor","nextVariant":"窄桌缝饭厅","inherits":["cord.polyline","cord.freeEnd","capturedBody.worldTransform"],"keyChoice":"线端仍绑在被捕获物上，下一关只能沿现有短绳路操作。"},
+        {"id":"T02-long-line","gate":"cord.freeEnd.attachedTo == phone_base && cord.pathPassesThrough == wallpaper_hole.id","nextVariant":"长桌轨饭厅","inherits":["cord.polyline","wallpaper_hole.worldPolygon","phone_base.worldTransform"],"keyChoice":"保留电话底座一端和穿墙线路，下一关能继续跨桌传力。"},
+        {"id":"T02-wall-part","gate":"capturedBody.kind == detached_wallpaper","nextVariant":"纸层饭厅","inherits":["detached wallpaper geometry","line attachment"],"keyChoice":"让墙纸被自身卷走，获得可遮挡和承载的纸层物品。"}
+      ]
+    },
+    {
+      "transition": "dinner_clamp -> table_strikes",
+      "selectionMoment": "桌面闭合、缝中最终内容和压缩率固定之后。",
+      "dependencies": ["seamContents", "compressionRatio", "tableClosure", "fragment_C.reachable"],
+      "branches": [
+        {"id":"T03-clear","gate":"seamContents.onlySacrificial == true","nextVariant":"空桌凸轮室","inherits":["clean seam","table alignment"],"keyChoice":"保住重要物，但下一关缺少可吸收第三击的软垫。"},
+        {"id":"T03-container","gate":"seamContents.hasContainerRim == true","nextVariant":"翘桌凸轮室","inherits":["bent container","uneven table edge"],"keyChoice":"用容器承压，下一关桌面倾角因此偏向一侧。"},
+        {"id":"T03-underfloor","gate":"underSeamExit.open == true","nextVariant":"下层凸轮室","inherits":["underfloor route","fallen bodies"],"keyChoice":"打开地板下层，换来新路线并永久改变后续落物去向。"}
+      ]
+    },
+    {
+      "transition": "table_strikes -> likeness_cutter",
+      "selectionMoment": "第三击的撞墙物、墙面局部凹痕和碎片 D 状态固定之后。",
+      "dependencies": ["lightestLooseBodyIdAtThirdImpact", "wallImpactCell", "wallDamage", "fragment_D.reachable"],
+      "branches": [
+        {"id":"T04-soft","gate":"impactWall.holeCreatedBy(thirdImpactEventId) == null","nextVariant":"完整投影室","inherits":["impactWall.markCreatedBy(thirdImpactEventId)","thirdProjectile.worldTransform","thirdProjectile.owner"],"keyChoice":"撞击只留下具体凹痕，没有形成贯穿洞，下一关保留完整扫描墙。"},
+        {"id":"T04-hole","gate":"impactWall.holeCreatedBy(thirdImpactEventId) != null","nextVariant":"偏光缺口室","inherits":["impactWall.holeCreatedBy(thirdImpactEventId).worldPolygon","hole.detachedPartIds","thirdProjectile.worldTransform"],"keyChoice":"第三击确实打出贯穿洞，下一关光线按这个洞的真实轮廓通过。"},
+        {"id":"T04-container-shot","gate":"thirdProjectile.isContainer == true","nextVariant":"套层投影室","inherits":["container contents","container deformation"],"keyChoice":"让容器承担抛射，下一关出现联合轮廓而非单物轮廓。"}
+      ]
+    },
+    {
+      "transition": "likeness_cutter -> red_tether",
+      "selectionMoment": "第三次扫描选中的轮廓、洞口多边形与碎片 E 可达性固定之后。",
+      "dependencies": ["selectedBodyId", "removedPolygon", "floorHoleArea", "fragment_E.reachable"],
+      "branches": [
+        {"id":"T05-intact-guides","gate":"removedPolygon.intersectsAny(red_tether.defaultGuideAnchors) == false","nextVariant":"密导环绳室","inherits":["removedPolygon","all defaultGuideAnchors","selectedBodyId"],"keyChoice":"切除轮廓没有碰到任何导环锚点，下一关保留原导环拓扑。"},
+        {"id":"T05-cut-guides","gate":"removedPolygon.intersectsAny(red_tether.defaultGuideAnchors) == true","nextVariant":"断导环绳室","inherits":["removedPolygon","intersectedGuideAnchorIds","detachedFloorPartIds"],"keyChoice":"切除轮廓真实带走至少一个导环锚点，红绳必须按剩余锚点改道。"},
+        {"id":"T05-layer-cut","gate":"selectedBody.kind == cover_layer","nextVariant":"双层绳室","inherits":["cut cover layer","protected body"],"keyChoice":"让覆盖层被剪，留下可再次改变绳索拓扑的薄片。"}
+      ]
+    },
+    {
+      "transition": "red_tether -> ten_minute_sun",
+      "selectionMoment": "门缝压缩完成、被拖物和卷盘剩余张力固定之后。",
+      "dependencies": ["capturedBodyId", "doorGapCompression", "tetherTension", "fragment_F.reachable"],
+      "branches": [
+        {"id":"T06-released-end","gate":"tether.freeEnd.attachedTo == null && tether.spoolEnd.attachedTo == spool.axis","nextVariant":"缓翻饭厅","inherits":["tether.polyline","tether.freeEnd.worldPosition","capturedBody.worldPolygon"],"keyChoice":"拖拽后线端已经释放，下一关桌轴只受配重驱动。"},
+        {"id":"T06-axis-linked","gate":"tether.freeEnd.attachedTo == counterweight_axis.inputHook","nextVariant":"绷弦饭厅","inherits":["tether.polyline","counterweight_axis.inputHook","doorGap.detachedMarkIds"],"keyChoice":"红绳仍真实连接桌轴，下一关翻桌时会把这条连接一起带动。"},
+        {"id":"T06-joint-body","gate":"capturedBody.isJointAssembly == true","nextVariant":"双物饭厅","inherits":["joint assembly","split ownership"],"keyChoice":"让联合体被拖，下一关可拆成两个不同质量候选。"}
+      ]
+    },
+    {
+      "transition": "ten_minute_sun -> resonant_ceiling",
+      "selectionMoment": "翻桌停止、第一撞门物和出口堵塞面积固定之后。",
+      "dependencies": ["firstDoorImpactBodyId", "doorClampDepth", "exitBlockedArea", "fragment_G.reachable"],
+      "branches": [
+        {"id":"T07-open-exit","gate":"pathQuery(player.shape, mainDoor.openPolygon, clampedBody.worldPolygon) == direct_pass","nextVariant":"九格声室","inherits":["mainDoor.openPolygon","clampedBody.worldPolygon","firstDoorImpactEventId"],"keyChoice":"用真实碰撞查询能直接穿过主门，下一关从正面进入九格声室。"},
+        {"id":"T07-narrow-exit","gate":"pathQuery(player.shape, mainDoor.openPolygon, clampedBody.worldPolygon) == pass_after_rotation","nextVariant":"斜声室","inherits":["remainingPassPolygon","clampedBody.worldTransform","player.requiredRotation"],"keyChoice":"主门只剩必须侧身通过的真实多边形，下一关声线按斜入口布置。"},
+        {"id":"T07-side-route","gate":"pathQuery(player.shape, mainDoor.openPolygon, clampedBody.worldPolygon) == blocked && pathQuery(player.shape, inheritedSideHole.worldPolygon) == direct_pass","nextVariant":"侧腔声室","inherits":["mainDoor collision bodies","inheritedSideHole.worldPolygon","inheritedSideHole.detachedPartIds"],"keyChoice":"主门真实不可通，只能使用此前打出的具体侧墙洞。"}
+      ]
+    },
+    {
+      "transition": "resonant_ceiling -> winter_frame",
+      "selectionMoment": "第一声音、坠落板位置、碎屑多边形和碎片 H 状态固定之后。",
+      "dependencies": ["firstSoundEventId", "soundOrigin", "selectedPanelId", "debrisPolygons", "fragment_H.reachable"],
+      "branches": [
+        {"id":"T08-clear-floor","gate":"pathQuery(player.shape, frost_channel.defaultPolyline, debrisPolygons) == direct_pass","nextVariant":"直槽冬门","inherits":["frost_channel.defaultPolyline","debrisPolygons","fallenPanel.worldTransform"],"keyChoice":"具体碎屑多边形没有阻断铜槽路线，霜线走原来的直槽。"},
+        {"id":"T08-bridge","gate":"fallenPanel.supportsCrossing == true","nextVariant":"桥槽冬门","inherits":["panel bridge","sound origin"],"keyChoice":"让坠板成为桥，换取跨过霜线的高度路线。"},
+        {"id":"T08-maze","gate":"pathQuery(player.shape, frost_channel.defaultPolyline, debrisPolygons) == blocked && fallenPanel.supportsCrossing == false","nextVariant":"折槽冬门","inherits":["all debris worldPolygons","blocked channel segment IDs","fallenPanel.worldTransform"],"keyChoice":"碎屑确实切断原槽且不能当桥，霜线与玩家都按剩余连续空间绕行。"}
+      ]
+    },
+    {
+      "transition": "winter_frame -> blank_answer",
+      "selectionMoment": "门框完成压合、门洞剩余面积、替代路线和全部碎片来路固定之后。",
+      "dependencies": ["firstBodyInDoorwayId", "lockShapeCompression", "doorwayFreeArea", "alternateRouteOpen", "distinctReachableFragmentRoutes"],
+      "branches": [
+        {"id":"T09-through-gap","gate":"pathQuery(player.shape, doorframe.remainingOpenPolygon, compressedBody.worldPolygon) == direct_pass","nextVariant":"门缝盒室","inherits":["compressedBody.worldPolygon","doorframe.remainingOpenPolygon","all fragment route IDs"],"keyChoice":"从真实剩余门缝穿过，盒壳继承这次压合留下的形状。"},
+        {"id":"T09-side-breach","gate":"pathQuery(player.shape, doorframe.remainingOpenPolygon) == blocked && pathQuery(player.shape, inheritedSideHole.worldPolygon) == direct_pass","nextVariant":"侧缺口盒室","inherits":["inheritedSideHole.worldPolygon","doorframe collision bodies","all fragment route IDs"],"keyChoice":"主门真实封死，但此前留下的具体侧墙洞仍能通行。"},
+        {"id":"T09-rewind","gate":"compatibleFragmentSets.isEmpty() == true","nextVariant":"因果地图回溯","inherits":["first transition where compatibleFragmentSets became empty","all exact fixed object states"],"keyChoice":"进入一个中途失败假结局，再从首次断绝全部碎片组合的节点回溯。"}
+      ]
+    }
+  ],
+  "middleFailureEndings": [
+    {
+      "id":"MID-FAIL-01-buried",
+      "name":"地板替你保存了答案",
+      "gate":"compatibleFragmentSets.isEmpty() && lastRouteLossEvent.type == embedded_without_extraction_path",
+      "scene":"最后一条可组成盒框的碎片来路被压入连续地板，且状态图中不存在可到达的拆卸、侧洞或牵引关系。",
+      "rewind":"回到 lastRouteLossEvent.firstIrreversibleTransitionId"
+    },
+    {
+      "id":"MID-FAIL-02-behind-wall",
+      "name":"墙纸里面没有出口",
+      "gate":"compatibleFragmentSets.isEmpty() && lastRouteLossEvent.type == captured_beyond_wall_without_link",
+      "scene":"碎片被电话线拖过墙纸平面，同时所有与它相连的线端、洞口和可拆墙片都已失去可达关系。",
+      "rewind":"回到 first transition where the final external link was removed"
+    },
+    {
+      "id":"MID-FAIL-03-cut-away",
+      "name":"轮廓之外",
+      "gate":"compatibleFragmentSets.isEmpty() && lastRouteLossEvent.type == removed_polygon_unreachable",
+      "scene":"剪影机带走最后一条兼容碎片路线，而被切除多边形没有成为可继承脱落物，也没有留下可通过洞口。",
+      "rewind":"回到 cutter target fixed 之前"
+    },
+    {
+      "id":"MID-FAIL-04-sealed-route",
+      "name":"所有门都是真的关上了",
+      "gate":"compatibleFragmentSets.isEmpty() && lastRouteLossEvent.type == all_collision_paths_sealed",
+      "scene":"主门、既有侧墙洞和地板下层都被具体碰撞体封住；不是出口开放率归零，而是路径查询找不到任何连续通路。",
+      "rewind":"回到 first transition that sealed the final traversable polygon"
+    },
+    {
+      "id":"MID-FAIL-05-incompatible-frame",
+      "name":"碎片很多，盒框仍不存在",
+      "gate":"compatibleFragmentSets.isEmpty() && lastRouteLossEvent.type == route_histories_incompatible",
+      "scene":"玩家仍持有碎片，但它们的具体来路、所有权或当前连接关系不能组成任何已设计的外围盒框集合。",
+      "rewind":"回到 first transition where validOuterFrameSets became empty"
+    }
+  ],
+  "finalEndingRule": {
+    "scene":"终点只有同一个答案盒。盒中央是‘让某件证据替你回答’的位置，外围槽只保存来路。系统只读取碎片实际在哪个槽，不分析玩家输入内容的观点。",
+    "falseEndingMechanism":"任一 A–I 碎片被放进中心答案槽，盒子便把该局部场景放大成唯一总解释，形成对应假结局。",
+    "trueEndingMechanism":"中心答案槽保持空，外围槽中的具体碎片集合属于 validOuterFrameSets，空白输入板才亮起；玩家亲自填写后进入真结局。"
+  },
+  "finalEndings": [
+    {"id":"FINAL-FALSE-A","type":"false","name":"她是在教我保护自己","gate":"center_answer_slot.contentId == fragment_A","image":"天花板门被定格成庇护顶","whyFalse":"当前用门板搭出的保护结构不能倒推当年关门是一种保护。"},
+    {"id":"FINAL-FALSE-B","type":"false","name":"她需要我，所以她爱我","gate":"center_answer_slot.contentId == fragment_B","image":"电话线把整个盒子缠成‘需要’二字","whyFalse":"需要孩子替自己留住男人，不等于爱这个孩子。"},
+    {"id":"FINAL-FALSE-C","type":"false","name":"我们一起吃过饭，所以家是真的","gate":"center_answer_slot.contentId == fragment_C","image":"盒中出现永远停在开饭前一秒的三套餐具","whyFalse":"真实快乐片段不能自动成为全部伤害的答案。"},
+    {"id":"FINAL-FALSE-D","type":"false","name":"只要我把话说对，她就不会生气","gate":"center_answer_slot.contentId == fragment_D","image":"听筒播放一句永远正确的哭喊","whyFalse":"孩子没有责任用完美表达管理大人的暴怒。"},
+    {"id":"FINAL-FALSE-E","type":"false","name":"只要我不像他，她就会爱我","gate":"center_answer_slot.contentId == fragment_E","image":"剪影机打印一张‘完全不像’的证书","whyFalse":"孩子不需要通过不像父亲来取得被爱的资格。"},
+    {"id":"FINAL-FALSE-F","type":"false","name":"只要我有用，她就会爱我","gate":"center_answer_slot.contentId == fragment_F","image":"红绳把门外钥匙永久拴在盒边","whyFalse":"有用不是被爱的前提，孩子不该负责维系夫妻关系。"},
+    {"id":"FINAL-FALSE-G","type":"false","name":"那些快乐是真的，所以伤害也等于爱","gate":"center_answer_slot.contentId == fragment_G","image":"十分钟太阳停止落砂并永远发亮","whyFalse":"快乐可以真实，但不能因此替伤害免责。"},
+    {"id":"FINAL-FALSE-H","type":"false","name":"只要我足够安静，坏事就不会来","gate":"center_answer_slot.contentId == fragment_H","image":"九格天花板被吸音棉封死","whyFalse":"一次成功回避不能证明长期伤害来自孩子不够安静。"},
+    {"id":"FINAL-FALSE-I","type":"false","name":"这一次门开了，所以当年也许没有关","gate":"center_answer_slot.contentId == fragment_I","image":"霜门倒放成一次从未发生的开门","whyFalse":"当前穿过一扇门不能改写母亲当年能够开门却没有开。"},
+    {
+      "id":"FINAL-TRUE-BLANK",
+      "type":"true",
+      "name":"没有内容的答案盒",
+      "gate":"center_answer_slot.contentId == null && validOuterFrameSets.contains(outer_slots.contentIds) && playerAuthoredAnswer.length > 0",
+      "image":"九个外围槽只保留玩家实际带来的来路，中央没有证据、没有文字，只有输入光标。",
+      "truth":"这里没有等待玩家发现的客观总证明。玩家第一次不让物品替自己作答，而是亲自定义当前愿意相信的状态。",
+      "unlocks":["second_loop","word_makes_state_real","current_undefined_state_selection"],
+      "doesNotUnlockYet":["rewrite_fixed_winter_past","past_compaction"]
+    }
+  ]
+}

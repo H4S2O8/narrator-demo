@@ -111,8 +111,22 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":6785852,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":40292940,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
+const qaMode = new URLSearchParams(location.search).get('mode');
+if (qaMode === 'qa-mobile') GODOT_CONFIG.args = ['--','--qa-mobile'];
+if (qaMode === 'qa-room') GODOT_CONFIG.args = ['--','--qa-room'];
+if (qaMode === 'qa-wall') GODOT_CONFIG.args = ['--','--qa-wall'];
+if (qaMode === 'qa-final') GODOT_CONFIG.args = ['--','--qa-final'];
+if (qaMode === 'prototype-qa') GODOT_CONFIG.args = ['--','--prototype-qa'];
+if (qaMode === 'qa-fx-phone') GODOT_CONFIG.args = ['--','--qa-fx-phone'];
+if (qaMode === 'qa-fx-dinner') GODOT_CONFIG.args = ['--','--qa-fx-dinner'];
+if (qaMode === 'qa-prophecy') GODOT_CONFIG.args = ['--','--qa-prophecy'];
+if (qaMode === 'prototype-qa') GODOT_CONFIG.args = ['--','--prototype-qa'];
+if (qaMode === 'qa-fx-phone') GODOT_CONFIG.args = ['--','--qa-fx-phone'];
+if (qaMode === 'qa-fx-dinner') GODOT_CONFIG.args = ['--','--qa-fx-dinner'];
+if (qaMode === 'qa-prophecy') GODOT_CONFIG.args = ['--','--qa-prophecy'];
+if (qaMode === 'prototype-qa') GODOT_CONFIG.args = ['--','--prototype-qa'];
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
