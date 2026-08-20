@@ -230,7 +230,7 @@
 
   async function browserChooseProphecy(p){
     if(!engine)return null;
-    const prompt=`你是创伤惊恐触发器。闪回已经结束且没有改变世界；现在才是在独立时机选择预言。只能从候选预言中选择一条，不能改写或新造。场景：${p.scene}。故事：${p.story}。触发上下文：${JSON.stringify(p.context)}。当前物品状态：${JSON.stringify(p.state)}。候选：${JSON.stringify(p.candidates)}。选择与当前接近或操作的物品、空间威胁和行动障碍联系最紧的一条；不同候选影响不同对象。只输出JSON：{"index":从0开始的整数,"reason":"一句话"}。`;
+    const prompt=`你是创伤惊恐触发器。闪回只是独立音画演出，既不启动也不重置预言；当前触发时机只来自场景中的接近、动作或持续稳定。只能从候选预言中选择一条，不能改写或新造。场景：${p.scene}。故事：${p.story}。触发上下文：${JSON.stringify(p.context)}。当前物品状态：${JSON.stringify(p.state)}。候选：${JSON.stringify(p.candidates)}。选择与当前接近或操作的物品、空间威胁和行动障碍联系最紧的一条；不同候选影响不同对象。只输出JSON：{"index":从0开始的整数,"reason":"一句话"}。`;
     try{
       const messages=[{role:'system',content:'只从候选列表选择，只输出JSON。'},{role:'user',content:prompt}];
       let text='';
